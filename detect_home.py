@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 from cvinput import cvwindows
 
-def main():
-    frame = cv2.imread('0.png', 0)
+def get_home():
+    frame = cv2.imread('videos/Tue Jul  4 13:28:01 2017/462.png', 0)
     blur = cv2.GaussianBlur(frame, (11, 11), 0)
     _, thresh = cv2.threshold(blur, 100, 255, cv2.THRESH_BINARY)
 
@@ -12,19 +12,18 @@ def main():
 
     contours_img = thresh.copy()
     contours, hierarchy = cv2.findContours(contours_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    contours_img = np.zeros((240, 320, 3), np.uint8)
-    cv2.drawContours(contours_img, contours, -1, (255, 0, 255), 3)
 
     contours = filter_by_area(frame.size, contours)
-
     contours = filter_by_sides(contours)
 
-    cv2.imshow('Thresh', thresh)
-    # cv2.imshow('Opening', opening)
-    cv2.imshow('Contours_img', contours_img)
+    contours_img = frame.copy()
+    cv2.drawContours(contours_img, contours, -1, (0, 0, 255), 3)
+    cv2.imshow('Home Plate', contours_img)
+    cv2.imshow('Original', thresh)
 
     while cvwindows.event_loop():
         pass
+    return contours[0] if len(contours) == 1 else None
 
 def filter_by_area(img_area, contours):
     filter_contours = []
@@ -42,31 +41,10 @@ def filter_by_sides(contours):
         approx = cv2.approxPolyDP(cnt, epsilon, True)
 
         lines = get_lines(approx)
-
-        points = max_dist(approx)
-        # fd
-        approx = np.zeros((240, 320, 3), np.uint8)
-        cv2.drawContours(approx, contours, -1, (255, 0, 0), 3)
-        cv2.drawContours(approx, points, -1, (0, 0, 255), 3)
-        cv2.imshow("a", approx)
-
+        dist = get_sort_dist(lines)
+        if abs(dist[0] - dist[1]) < 1 and abs(dist[2] - dist[3]):
+            filter_contours.append(cnt)
     return filter_contours
-
-def max_dist(points):
-    result = []
-    _max = 0
-    for i in range(len(points) - 1):
-        dist = ((points[i][0][0]-points[i+1][0][0])**2 + (points[i][0][1]-points[i+1][0][1])**2)**(1./2)
-        if dist > _max:
-            _max = dist
-            result.append(points[i])
-            result.append(points[i+1])
-    dist = ((points[0][0][0]-points[len(points)-1][0][0])**2 + (points[0][0][1]-points[len(points)-1][0][1])**2)**(1./2)
-    if dist > _max:
-        _max = dist
-        result.append(points[i])
-        result.append(points[i+1])
-    return result
 
 def get_lines(points):
     lines = []
@@ -75,5 +53,12 @@ def get_lines(points):
     lines.append([points[len(points) - 1][0], points[0][0]])
     return lines
 
+def get_sort_dist(lines):
+    dist = []
+    for line in lines:
+        dist.append(((line[0][0] - line[1][0])**2+(line[0][1] - line[1][1])**2)**.5)
+    dist.sort()
+    return dist
+
 if __name__ == "__main__":
-    main()
+    get_home()
