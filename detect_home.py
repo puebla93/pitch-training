@@ -2,7 +2,9 @@ import cv2
 import numpy as np
 
 def get_home(frame):
-    blur = cv2.GaussianBlur(frame, (11, 11), 0)
+    # blur = cv2.GaussianBlur(frame, (11, 11), 0)
+    # img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blur = cv2.medianBlur(frame, 5)
     _, thresh = cv2.threshold(blur, 100, 255, cv2.THRESH_BINARY)
 
     # kernel = np.ones((5, 5), np.uint8)
@@ -10,17 +12,22 @@ def get_home(frame):
 
     contours_img = thresh.copy()
     contours, hierarchy = cv2.findContours(contours_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # im = np.zeros((240, 320, 3), np.uint8)
+    # cv2.drawContours(im, contours, -1, (0, 0, 255), 3)
+    # cv2.imshow('a', im)
 
     contours = filter_by_area(frame.size, contours)
     contours = filter_by_sides(contours)
 
-    # contours_img = frame.copy()
-    # cv2.drawContours(contours_img, contours, -1, (0, 0, 255), 3)
-    # cv2.imshow('Home Plate', contours_img)
-    # cv2.imshow('Original', thresh)
+    if __name__ == "__main__":
+        contours_img = frame.copy()
+        cv2.drawContours(contours_img, contours, -1, (0, 0, 255), 3)
+        cv2.imshow('Home Plate', contours_img)
+        cv2.imshow('Thresh', thresh)
+        cv2.imshow('Original', frame)
 
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
     return contours[0] if len(contours) == 1 else None
 
 def filter_by_area(img_area, contours):
@@ -37,14 +44,16 @@ def filter_by_sides(contours):
     for cnt in contours:
         hull = cv2.convexHull(cnt)
         # im = np.zeros((240, 320, 3), np.uint8)
-        # cv2.drawContours(im, [hull], -1, (0, 255, 0), 3)
+        # cv2.drawContours(im, [hull], -1, (0, 255, 0), 1)
         # cv2.imshow("img", im)
 
-        # epsilon = 0.05*cv2.arcLength(cnt, True)
         epsilon = 0.05*cv2.arcLength(hull, True)
-        approx = cv2.approxPolyDP(hull, epsilon, True)
+        cnt_approx = cv2.approxPolyDP(hull, epsilon, True)
 
-        lines = get_lines(approx)
+        if len(cnt_approx) != 5:
+            continue
+
+        lines = get_lines(cnt_approx)
 
         # img = np.zeros((240, 320, 3), np.uint8)
         # cv2.line(img, (lines[0][0][0], lines[0][0][1]), (lines[0][1][0], lines[0][1][1]), (255, 0, 0), 1)
@@ -57,8 +66,12 @@ def filter_by_sides(contours):
         # cv2.imshow('a', img)
 
         dist = get_sort_dist(lines)
-        if abs(dist[0] - dist[1]) < 4 and abs(dist[2] - dist[3]) < 3:
-            # filter_contours.append(cnt)
+        min_diff = abs(dist[0] - dist[1])
+        percent_min_sides = 100 * min_diff / dist[1] # find the percent with max distance to minimize the percentage
+        max_diff = abs(dist[2] - dist[3])
+        percent_midde_sides = 100 * max_diff / dist[3] # find the percent with max distance to minimize the percentage
+        # if min_diff < 5 and max_diff < 5: # filter by distances difference
+        if percent_min_sides < 15 and percent_midde_sides < 15: # filter by percent between distances
             filter_contours.append(hull)
     return filter_contours
 
@@ -73,11 +86,9 @@ def get_sort_dist(lines):
     dist = []
     for line in lines:
         dist.append(((line[0][0] - line[1][0])**2+(line[0][1] - line[1][1])**2)**.5)
-    # for d in dist:
-    #     print d
     dist.sort()
     return dist
 
 if __name__ == "__main__":
-    frame = cv2.imread('videos/Tue Jul  4 13:28:01 2017/457.png', 0)
+    frame = cv2.imread('videos/Tue Jul  4 13:28:45 2017/0.png', 0)
     get_home(frame)
