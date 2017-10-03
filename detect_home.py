@@ -1,15 +1,5 @@
-import argparse
 import cv2
-import numpy as np
-
-args = None
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="Pitvher Training")
-    parser.add_argument('-c', "--camera", dest="camera",type=int, default=0, help='Index of the camera to use. Default 0, usually this is the camera on the laptop display')
-    parser.add_argument('-d', "--debug", dest="debugging",type=bool, default=False, help='Print all windows. This option is gor debugging')
-
-    return parser.parse_args()
+from parse_args import args
 
 def get_home(frame):
     # blur = cv2.GaussianBlur(frame, (11, 11), 0)
@@ -149,6 +139,5 @@ def show_contours(cnt, frame, window_name):
     cv2.imshow(window_name, preview)
 
 if __name__ == "__main__":
-    args = parse_args()
     frame = cv2.imread('videos/Tue Jul  4 13:28:45 2017/160.png', 0)
     get_home(frame)
