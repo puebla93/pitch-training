@@ -1,9 +1,18 @@
+import argparse
 import cv2
-import numpy as np
 from cvinput import cvwindows
-from detect_home import get_home
-from transform import four_point_transform
+import detect_home
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Pitvher Training")
+    parser.add_argument('-c', "--camera", dest="camera",type=int, default=0, help='Index of the camera to use. Default 0, usually this is the camera on the laptop display')
+    parser.add_argument('-d', "--debug", dest="debugging",type=bool, default=False, help='Print all windows. This option is gor debugging')
+
+    return parser.parse_args()
+
+
+detect_home.args = parse_args()
 camera = cvwindows.create('camera')
 i = 0
 while cvwindows.event_loop():
@@ -11,16 +20,9 @@ while cvwindows.event_loop():
     frame = cv2.imread(path, 0)
     if frame is None:
         break
-    cnt = get_home(frame)
+    cnt = detect_home.get_home(frame)
     if cnt is None:
         print i
-
-    # rows,cols = frame.shape
-    # pts = np.float32([[0,0],[rows,0],[0,cols],[rows,cols]])
-
-    # M = cv2.getPerspectiveTransform(cnt,pts)
-
-    # dst = cv2.warpPerspective(frame,M,(300,300))
 
     contours_img = frame.copy()
     cv2.drawContours(contours_img, [cnt], -1, (0, 255, 0), 3)
