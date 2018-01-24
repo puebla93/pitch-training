@@ -23,11 +23,15 @@ def get_home(frame):
     contours = filter_by_area(frame, contours)
     contours = filter_by_sides(frame, contours)
 
+    if args.debugging:
+        cv2.destroyWindow('Thresh')
+        cv2.destroyWindow('filters contours by sides')
+
     if __name__ == "__main__":
-        # show_contours(contours, frame, 'Home Plate')
-        contours_img = frame.copy()
-        cv2.drawContours(contours_img, contours, -1, (0, 0, 255), 2)
-        cv2.imshow('Home Plate', contours_img)
+        show_contours(contours, frame, 'Home Plate')
+        # contours_img = frame.copy()
+        # cv2.drawContours(contours_img, contours, -1, (0, 0, 255), 2)
+        # cv2.imshow('Home Plate', contours_img)
         cv2.imshow('Original', frame)
 
         cv2.waitKey(0)
@@ -52,20 +56,21 @@ def filter_by_area(frame, contours):
     if args.debugging:
         cv2.destroyWindow('working cnt in filter by area')
         cv2.destroyWindow('all contours')
-        show_contours(filter_contours, frame, 'filter contours by area')
+        show_contours(filter_contours, frame, 'filters contours by area')
     return filter_contours
 
 def filter_by_sides(frame, contours):
     filter_contours = []
+    import numpy as np
     for cnt in contours:
+        hull = cv2.convexHull(cnt)
+        
         if args.debugging:
             show_contours([cnt], frame, 'working cnt in filter by sides')
+            show_contours([hull], frame, "Hull")
 
-        # hull = cv2.convexHull(cnt)
-        # im = np.zeros((240, 320, 3), np.uint8)
-        # cv2.drawContours(im, [hull], -1, (0, 255, 0), 1)
-        # cv2.imshow("img", im)
-
+        # epsilon = 0.03*cv2.arcLength(hull, True)
+        # cnt_approx = cv2.approxPolyDP(hull, epsilon, True)
         epsilon = 0.03*cv2.arcLength(cnt, True)
         cnt_approx = cv2.approxPolyDP(cnt, epsilon, True)
         if args.debugging:
@@ -112,8 +117,9 @@ def filter_by_sides(frame, contours):
         cv2.destroyWindow('working cnt in filter by sides')
         cv2.destroyWindow('approx of working cnt in filter by sides')
         cv2.destroyWindow('lines')
-        cv2.destroyWindow('filter contours by area')
-        show_contours(filter_contours, frame, 'filter contours by sides')
+        cv2.destroyWindow('filters contours by area')
+        cv2.destroyWindow('Hull')
+        show_contours(filter_contours, frame, 'filters contours by sides')
     return filter_contours
 
 def get_lines_sorted_by_dist(points):

@@ -1,7 +1,6 @@
 *.png
 *.pyc
 *.txt
-downloads
-.vscode
-PSStereo-master
-Research
+*/
+*.rar
+*.zip

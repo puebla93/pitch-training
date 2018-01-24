@@ -19,6 +19,6 @@ while cvwindows.event_loop():
         print i
 
     contours_img = frame.copy()
-    cv2.drawContours(contours_img, [cnt], -1, (0, 255, 0), 3)
+    cv2.drawContours(contours_img, [cnt], -1, (0, 255, 0), 2)
     camera.show(contours_img)
     i += 1
