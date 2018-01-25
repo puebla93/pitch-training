@@ -1,5 +1,6 @@
 import cv2
 from parse_args import args
+from refin_corner import refining_corners
 
 def get_home(frame):
     # blur = cv2.GaussianBlur(frame, (11, 11), 0)
@@ -64,7 +65,7 @@ def filter_by_sides(frame, contours):
     import numpy as np
     for cnt in contours:
         hull = cv2.convexHull(cnt)
-        
+
         if args.debugging:
             show_contours([cnt], frame, 'working cnt in filter by sides')
             show_contours([hull], frame, "Hull")
@@ -85,8 +86,14 @@ def filter_by_sides(frame, contours):
 
         lines = get_lines_sorted_by_dist(cnt_approx)
 
-
         dist = get_dist(lines)
+
+        winSize = int(dist[0]) if int(dist[0]) % 2 != 0 else int(dist[0]) - 1
+        refined_corners = cnt_approx.astype('float32')
+        refining_corners(frame, refined_corners, (5, 5))
+        refined_lines = get_lines_sorted_by_dist(refined_corners)
+
+        dist = get_dist(refined_lines)
         min_diff = abs(dist[0] - dist[1])
         percent_min_sides = 100 * min_diff / dist[1] # find the percent with max distance to minimize the percentage
         max_diff = abs(dist[2] - dist[3])
@@ -105,13 +112,8 @@ def filter_by_sides(frame, contours):
                 print "discarded by min(blue) sides: ", percent_min_sides
             if percent_middel_sides > 20:
                 print "discarded by middel(green) sides: ", percent_middel_sides
-            preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-            cv2.line(preview, (lines[0][0][0], lines[0][0][1]), (lines[0][1][0], lines[0][1][1]), (255, 0, 0), 1)
-            cv2.line(preview, (lines[1][0][0], lines[1][0][1]), (lines[1][1][0], lines[1][1][1]), (255, 0, 0), 1)
-            cv2.line(preview, (lines[2][0][0], lines[2][0][1]), (lines[2][1][0], lines[2][1][1]), (0, 255, 0), 1)
-            cv2.line(preview, (lines[3][0][0], lines[3][0][1]), (lines[3][1][0], lines[3][1][1]), (0, 255, 0), 1)
-            cv2.line(preview, (lines[4][0][0], lines[4][0][1]), (lines[4][1][0], lines[4][1][1]), (0, 0, 255), 1)
-            cv2.imshow('lines', preview)
+            draw_lines(lines, frame, 'lines')
+            draw_lines(refined_lines, frame, 'refined_corners')
             cv2.waitKey(0)
     if args.debugging:
         cv2.destroyWindow('working cnt in filter by sides')
@@ -119,6 +121,7 @@ def filter_by_sides(frame, contours):
         cv2.destroyWindow('lines')
         cv2.destroyWindow('filters contours by area')
         cv2.destroyWindow('Hull')
+        cv2.destroyWindow('refined_corners')
         show_contours(filter_contours, frame, 'filters contours by sides')
     return filter_contours
 
@@ -126,7 +129,7 @@ def get_lines_sorted_by_dist(points):
     lines = []
     for i in range(len(points) - 1):
         lines.append([points[i][0], points[i+1][0]])
-    lines.append([points[len(points) - 1][0], points[0][0]])
+    lines.append([points[-1][0], points[0][0]])
     lines.sort(key = (lambda line : ((line[0][0] - line[1][0])**2+(line[0][1] - line[1][1])**2)**.5))
     return lines
 
@@ -142,6 +145,15 @@ def get_dist(lines):
 def show_contours(cnt, frame, window_name):
     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
     cv2.drawContours(preview, cnt, -1, (0, 0, 255), 1)
+    cv2.imshow(window_name, preview)
+
+def draw_lines(lines, frame, window_name):
+    preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+    cv2.line(preview, (lines[0][0][0], lines[0][0][1]), (lines[0][1][0], lines[0][1][1]), (255, 0, 0), 1)
+    cv2.line(preview, (lines[1][0][0], lines[1][0][1]), (lines[1][1][0], lines[1][1][1]), (255, 0, 0), 1)
+    cv2.line(preview, (lines[2][0][0], lines[2][0][1]), (lines[2][1][0], lines[2][1][1]), (0, 255, 0), 1)
+    cv2.line(preview, (lines[3][0][0], lines[3][0][1]), (lines[3][1][0], lines[3][1][1]), (0, 255, 0), 1)
+    cv2.line(preview, (lines[4][0][0], lines[4][0][1]), (lines[4][1][0], lines[4][1][1]), (0, 0, 255), 1)
     cv2.imshow(window_name, preview)
 
 if __name__ == "__main__":
