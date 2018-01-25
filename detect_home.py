@@ -1,6 +1,6 @@
 import cv2
 from parse_args import args
-from refin_corner import refining_corners
+from refine_corner import refining_corners
 
 def get_home(frame):
     # blur = cv2.GaussianBlur(frame, (11, 11), 0)
