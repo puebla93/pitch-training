@@ -16,5 +16,7 @@ params = Obj(
     useHull=True,
     useKmeans=False,
     kmeans_k=6,
-    medianBlur_ksize=5
+    medianBlur_ksize=5,
+    max_percentRadius=10,
+    min_percentRadius=4
 )

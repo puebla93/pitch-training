@@ -5,6 +5,7 @@ from refine_corner import refining_corners
 from parse_args import args
 from params import params
 from kmeans import kmeans
+from utils import show_contours, draw_lines
 
 def get_home(frame):
     # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -49,7 +50,6 @@ def filter_by_area(frame, contours):
         if percent_area > params.max_percentArea or percent_area < params.min_percentArea:
             if args.debugging:
                 print "discarded by area"
-                print "area = ", cnt_area, " percent = ", percent_area
         else:
             filter_contours.append(cnt)
             if args.debugging:
@@ -171,20 +171,6 @@ def get_dist(lines):
         print "\nDISTANCES SORTED"
         print dist
     return dist
-
-def show_contours(cnt, frame, window_name):
-    preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-    cv2.drawContours(preview, cnt, -1, (0, 0, 255), 1)
-    cv2.imshow(window_name, preview)
-
-def draw_lines(lines, frame, window_name):
-    preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-    cv2.line(preview, (lines[0][0][0], lines[0][0][1]), (lines[0][1][0], lines[0][1][1]), (255, 0, 0), 1)
-    cv2.line(preview, (lines[1][0][0], lines[1][0][1]), (lines[1][1][0], lines[1][1][1]), (255, 0, 0), 1)
-    cv2.line(preview, (lines[2][0][0], lines[2][0][1]), (lines[2][1][0], lines[2][1][1]), (0, 255, 0), 1)
-    cv2.line(preview, (lines[3][0][0], lines[3][0][1]), (lines[3][1][0], lines[3][1][1]), (0, 255, 0), 1)
-    cv2.line(preview, (lines[4][0][0], lines[4][0][1]), (lines[4][1][0], lines[4][1][1]), (0, 0, 255), 1)
-    cv2.imshow(window_name, preview)
 
 if __name__ == "__main__":
     folder_path = os.listdir("videos")
