@@ -41,6 +41,9 @@ class Reader():
         if nparams.has_key("read_from") and nparams["read_from"] == "camera" and self.capture is None:
             self.capture = cv2.VideoCapture(self.params.camera_index)
 
+    def get_actualFrame(self):
+        return self._actual_frame
+
     def __setDefaults__(self):
         self.params = Obj(
             read_from="folder",

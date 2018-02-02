@@ -1,21 +1,12 @@
-import argparse
 import os
 import time
 from datetime import datetime
 import cv2
-from cvinput import cvwindows
 import beep
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="Pitvher Training")
-    parser.add_argument('-c', "--camera", dest="camera",type=int, default=0, help='Index of the camera to use. Default 0, usually this is the camera on the laptop display')
-    parser.add_argument('-d', "--debug", dest="debugging",type=bool, default=False, help='Print all windows. This option is gor debugging')
-
-    return parser.parse_args()
+from cvinput import cvwindows
+from parse_args import args
 
 def main():
-    args = parse_args()
-
     camera = cvwindows.create('camera')
     capture = cv2.VideoCapture(args.camera)
     set_props(capture, ["FRAME_WIDTH", "FRAME_HEIGHT", "FPS"], [320, 240, 187])

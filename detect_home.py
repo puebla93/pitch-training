@@ -5,13 +5,13 @@ from refine_corner import refining_corners
 from utils import show_contours, draw_lines, Obj
 
 params = Obj(
+    debugging=False,
     thresh_blockSize=31,
     max_percentArea=10,
     min_percentArea=1,
     numberOfSizes=5,
     useHull=True,
-    percentSideRatio=20,
-    debugging=False
+    percentSideRatio=20
 )
 
 def get_homes(frame):
@@ -26,7 +26,7 @@ def get_homes(frame):
     if params.debugging:
         show_contours(contours, frame, 'all contours')
 
-    filters = [filter_by_area, filter_by_sidesNumber, filter_by_sidesRatio, filter_by_angule]
+    filters = [filter_by_area, filter_by_sidesNumber, filter_by_sidesRatio, filter_by_angles]
     homes = filter_by(frame, filters, contours)
 
     if params.debugging:
@@ -67,16 +67,6 @@ def filter_by_area(frame, contours):
 def filter_by_sidesNumber(frame, contours):
     filter_contours = []
     for cnt in contours:
-        ###############################################
-
-        # rect = cv2.minAreaRect(cnt)
-        # box = cv2.boxPoints(rect)
-        # box = np.int0(box)
-        # show_contours([box], frame, 'Rect')
-        # im = cv2.drawContours(im,[box],0,(0,0,255),2)
-
-        ###############################################
-
         hull = cv2.convexHull(cnt)
 
         if params.debugging:
@@ -156,7 +146,19 @@ def filter_by_sidesRatio(frame, contours):
 
     return filter_contours
 
-def filter_by_angule(frame, contours):
+def filter_by_angles(frame, contours):
+    for cnt in contours:
+        ###############################################
+
+        # rect = cv2.minAreaRect(cnt)
+        # box = cv2.boxPoints(rect)
+        # box = np.int0(box)
+        # show_contours([box], frame, 'Rect')
+        # cv2.waitKey(0)
+
+        ###############################################
+        break
+
     return contours
 
 def get_lines_sorted_by_dist(points):

@@ -1,8 +1,5 @@
-import os
 import numpy as np
 import cv2
-from utils import Obj
-from parse_args import args
 
 def kmeans(frame, K):
     Z = frame.reshape((-1, 3))
@@ -20,16 +17,3 @@ def kmeans(frame, K):
     result_frame = tmp.reshape((frame.shape))
 
     return result_frame
-
-if __name__ == '__main__':
-    folder_path = os.listdir("videos")
-    folder_path.sort()
-    path = 'videos/' + folder_path[args.test_folder] + '/' + str(args.test_frame) + '.png'
-    frame = cv2.imread(path, 0)
-
-    kmeans_frame = kmeans(frame, params.kmeans_k)
-
-    cv2.imshow('frame', frame)
-    cv2.imshow('Kmeans', kmeans_frame)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
