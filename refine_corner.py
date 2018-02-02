@@ -1,8 +1,6 @@
 import cv2
 
 def refining_corners(gray, corners, winSize):
-    # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 

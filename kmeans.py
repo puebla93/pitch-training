@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import cv2
-from params import params
+from utils import Obj
 from parse_args import args
 
 def kmeans(frame, K):

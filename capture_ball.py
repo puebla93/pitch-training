@@ -4,11 +4,26 @@ import cv2
 from cvinput import cvwindows
 from kmeans import kmeans
 from parse_args import args
-from params import params
-from utils import show_contours, draw_circle, draw_circles
+from utils import show_contours, draw_circle, draw_circles, Obj
+
+params = Obj(
+    # thresh_blockSize=31,
+    # max_percentArea=10,
+    # min_percentArea=1,
+    # percentSideRatio=20,
+    # numberOfSizes=5,
+    # useHull=True,
+    useKmeans=False,
+    medianBlur_ksize=5,
+    kmeans_k=6,
+    max_percentRadius=10,
+    min_percentRadius=1.5
+)
 
 def get_ball(fgbg, frame, kernel=None):
-    fgmask = fgbg.apply(frame)
+    blur = cv2.medianBlur(frame, params.medianBlur_ksize)
+
+    fgmask = fgbg.apply(blur)
     if kernel is not None:
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
 
@@ -37,8 +52,8 @@ def filter_by_radius(frame, contours):
             show_contours([cnt], frame, 'working cnt in filter by radius')
 
         (x, y), radius = cv2.minEnclosingCircle(cnt)
-        center = (int(x), int(y))
-        radius = int(radius)
+        center = x, y
+        radius = radius
 
         if radius > params.max_percentRadius or radius < params.min_percentRadius:
             if args.debugging:
@@ -51,7 +66,7 @@ def filter_by_radius(frame, contours):
 
         if args.debugging:
             draw_circle(center, radius, frame, 'Enclosing circle of working cnt in filter by radius')
-            # cv2.waitKey(0)
+            cv2.waitKey(0)
 
     if args.debugging:
         draw_circles(centers, radiuses, frame, 'filters circles by radius')
@@ -80,10 +95,10 @@ if __name__ == '__main__':
         centers, radiuses = get_ball(mog2, gray, kernel)
         ball_tracking.append((centers, radiuses))
         for j in range(len(centers)):
-            cv2.circle(frame, centers[j], radiuses[j], (0, 255, 0), 2)
+            cv2.circle(frame, (int(centers[j][0]),int(centers[j][1])), int(radiuses[j]), (0, 255, 0), 1)            
         camera.show(frame)
-        if args.debugging:
-            cv2.waitKey(0)
+        # if args.debugging:
+            # cv2.waitKey(0)
 
         i += 1
 
@@ -91,8 +106,10 @@ if __name__ == '__main__':
 
     img_path = path + '0.png'
     frame = cv2.imread(img_path)
+    # draw_circles(centers, radiuses, frame, 'tracking')
     for centers, radiuses in ball_tracking:
         for j in range(len(centers)):
-            cv2.circle(frame, centers[j], radiuses[j], (0, 255, 0), 2)
+            print 2*radiuses[j]
+            cv2.circle(frame, (int(centers[j][0]),int(centers[j][1])), int(radiuses[j]), (0, 255, 0), 1)
     cv2.imshow("tracking", frame)
     cv2.waitKey()

@@ -2,44 +2,44 @@ import os
 import cv2
 import numpy as np
 from refine_corner import refining_corners
-from parse_args import args
-from params import params
-from kmeans import kmeans
-from utils import show_contours, draw_lines
+from utils import show_contours, draw_lines, Obj
 
-def get_home(frame):
-    # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    blur = cv2.medianBlur(frame, params.medianBlur_ksize)
-    thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, params.thresh_blockSize, 7)
+params = Obj(
+    thresh_blockSize=31,
+    max_percentArea=10,
+    min_percentArea=1,
+    numberOfSizes=5,
+    useHull=True,
+    percentSideRatio=20,
+    debugging=False
+)
 
-    if args.debugging:
-        cv2.imshow('Blur', blur)
+def get_homes(frame):
+    thresh = cv2.adaptiveThreshold(frame, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, params.thresh_blockSize, 7)
+
+    if params.debugging:
         cv2.imshow('Thresh', thresh)
 
     contours_img = thresh.copy()
     contours, hierarchy = cv2.findContours(contours_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    if args.debugging:
+    if params.debugging:
         show_contours(contours, frame, 'all contours')
 
-    contours = filter_by_area(frame, contours)
-    contours = filter_by_sidesNumber(frame, contours)
-    contours = filter_by_sidesRatio(frame, contours)
+    filters = [filter_by_area, filter_by_sidesNumber, filter_by_sidesRatio, filter_by_angule]
+    homes = filter_by(frame, filters, contours)
 
-    if args.debugging:
-        cv2.destroyWindow('Blur')
+    if params.debugging:
         cv2.destroyWindow('Thresh')
         cv2.destroyWindow('filters contours by sides ratio')
 
-    if __name__ == "__main__":
-        show_contours(contours.astype('int32'), frame, 'Home Plate')
-        cv2.imshow('Original', frame)
+    return homes
 
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-    return contours
-    # return contours[0] if len(contours) == 1 else None
+def filter_by(frame, filters, contours):
+    homes = contours
+    for f in filters:
+        homes = f(frame, homes)
+    return homes
 
 def filter_by_area(frame, contours):
     filter_contours = []
@@ -48,16 +48,16 @@ def filter_by_area(frame, contours):
         cnt_area = cv2.contourArea(cnt)
         percent_area = 100 * cnt_area / frame_size
         if percent_area > params.max_percentArea or percent_area < params.min_percentArea:
-            if args.debugging:
+            if params.debugging:
                 print "discarded by area"
         else:
             filter_contours.append(cnt)
-            if args.debugging:
+            if params.debugging:
                 print "carded by area"
-        if args.debugging:
+        if params.debugging:
             show_contours([cnt], frame, 'working cnt in filter by area')
             cv2.waitKey(0)
-    if args.debugging:
+    if params.debugging:
         cv2.destroyWindow('working cnt in filter by area')
         cv2.destroyWindow('all contours')
         show_contours(filter_contours, frame, 'filters contours by area')
@@ -79,7 +79,7 @@ def filter_by_sidesNumber(frame, contours):
 
         hull = cv2.convexHull(cnt)
 
-        if args.debugging:
+        if params.debugging:
             show_contours([cnt], frame, 'working cnt in filter by sides')
             show_contours([hull], frame, "Hull")
 
@@ -91,17 +91,17 @@ def filter_by_sidesNumber(frame, contours):
             cnt_approx = cv2.approxPolyDP(cnt, epsilon, True)
 
         if len(cnt_approx) != params.numberOfSizes:
-            if args.debugging:
+            if params.debugging:
                 print "discarded by sides"
                 print len(cnt_approx), " sides"
         else:
             filter_contours.append(cnt_approx)
 
-        if args.debugging:
+        if params.debugging:
             show_contours([cnt_approx], frame, 'approx of working cnt in filter by sides')
             cv2.waitKey(0)
 
-    if args.debugging:
+    if params.debugging:
         cv2.destroyWindow('working cnt in filter by sides')
         cv2.destroyWindow('Hull')
         cv2.destroyWindow('approx of working cnt in filter by sides')
@@ -129,7 +129,7 @@ def filter_by_sidesRatio(frame, contours):
         max_diff = abs(dist[2] - dist[3])
         percent_middel_sides = 100 * max_diff / dist[3] # find the percent with max distance to minimize the percentage
 
-        if args.debugging:
+        if params.debugging:
             print "\nPERCENT"
             print "MIN_SIDES: ", percent_min_sides
             print "MIDDEL_SIDES: ", percent_middel_sides
@@ -137,7 +137,7 @@ def filter_by_sidesRatio(frame, contours):
         if percent_min_sides <= params.percentSideRatio and percent_middel_sides <= params.percentSideRatio: # filter by percent between distances
             filter_contours.append(refined_corners)
 
-        if args.debugging:
+        if params.debugging:
             if percent_min_sides > params.percentSideRatio:
                 print "discarded by min(blue) sides: ", percent_min_sides
             if percent_middel_sides > params.percentSideRatio:
@@ -147,7 +147,7 @@ def filter_by_sidesRatio(frame, contours):
             cv2.waitKey(0)
 
     filter_contours = np.array(filter_contours)
-    if args.debugging:
+    if params.debugging:
         cv2.destroyWindow('lines')
         cv2.destroyWindow('refined_corners')
         cv2.destroyWindow('filters contours by sides number')
@@ -155,6 +155,9 @@ def filter_by_sidesRatio(frame, contours):
         cv2.waitKey(0)
 
     return filter_contours
+
+def filter_by_angule(frame, contours):
+    return contours
 
 def get_lines_sorted_by_dist(points):
     lines = []
@@ -167,16 +170,10 @@ def get_dist(lines):
     dist = []
     for line in lines:
         dist.append(((line[0][0] - line[1][0])**2+(line[0][1] - line[1][1])**2)**.5)
-    if args.debugging:
+    if params.debugging:
         print "\nDISTANCES SORTED"
         print dist
     return dist
 
-if __name__ == "__main__":
-    folder_path = os.listdir("videos")
-    folder_path.sort()
-    path = 'videos/' + folder_path[args.test_folder] + '/' + str(args.test_frame) + '.png'
-    frame = cv2.imread(path, 0)
-    if params.useKmeans:
-        frame = kmeans(frame, params.kmeans_k)
-    get_home(frame)
+def setUp(nparams):
+    params.setattr(nparams)
