@@ -26,7 +26,7 @@ def main():
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
     #setting up detect_home and capture_ball params
-    detect_home.setUp({"debugging":args.debugging})
+    # detect_home.setUp({"debugging":args.debugging})
     capture_ball.setUp({"debugging":args.debugging})
 
     while cvwindows.event_loop():
@@ -57,15 +57,15 @@ def main():
         # transform the frame
 
         # finding the ball
-        centers, radiuses = capture_ball.get_ball(gray, mog2, kernel)
-        if len(radiuses) > 0:
-            ball_tracking.append((centers, radiuses))
+        balls = capture_ball.get_ball(gray, mog2, kernel)
+        if len(balls) > 0:
+            ball_tracking.append(balls)
 
         # draw home and the balls trajectory
         contours_img = frame.copy()
         cv2.drawContours(contours_img, homes.astype('int32'), -1, (0, 0, 255), 2)
-        for j in range(len(centers)):
-            cv2.circle(contours_img, (int(centers[j][0]), int(centers[j][1])), int(radiuses[j]), (0, 255, 0), 1)
+        for center, radius in balls:
+            cv2.circle(contours_img, (int(center[0]), int(center[1])), int(radius), (0, 255, 0), 1)
         camera.show(contours_img)
 
         # if len(homes) > 1:
@@ -77,9 +77,9 @@ def main():
     reader.restart_reading()
     frame = reader.read()
 
-    for centers, radiuses in ball_tracking:
-        for j in range(len(radiuses)):
-            cv2.circle(frame, (int(centers[j][0]), int(centers[j][1])), int(radiuses[j]), (0, 255, 0), 1)
+    for balls in ball_tracking:
+        for center, radius in balls:
+            cv2.circle(frame, (int(center[0]), int(center[1])), int(radius), (0, 255, 0), 1)
     cv2.imshow("tracking", frame)
     cv2.waitKey()
 

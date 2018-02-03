@@ -57,15 +57,15 @@ def show_contours(cnt, frame, window_name):
     cv2.drawContours(preview, cnt, -1, (0, 0, 255), 1)
     cv2.imshow(window_name, preview)
 
-def draw_circle(center, radius, frame, window_name):
+def draw_ball(ball, frame, window_name):
     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-    cv2.circle(preview, (int(center[0]),int(center[1])), int(radius), (0, 255, 0), 1)
+    cv2.circle(preview, (int(ball[0][0]), int(ball[0][1])), int(ball[1]), (0, 255, 0), 1)
     cv2.imshow(window_name, preview)
 
-def draw_circles(centers, radiuses, frame, window_name):
+def draw_balls(balls, frame, window_name):
     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-    for j in range(len(centers)):
-        cv2.circle(preview, (int(center[j][0]),int(center[j][1])), int(radiuses[j]), (0, 255, 0), 1)
+    for ball in balls:
+        cv2.circle(preview, (int(ball[0][0]), int(ball[0][1])), int(ball[1]), (0, 255, 0), 1)
     cv2.imshow(window_name, preview)
 
 def draw_lines(lines, frame, window_name):
