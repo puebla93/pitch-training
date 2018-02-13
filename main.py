@@ -1,16 +1,19 @@
 import os
+import numpy as np
 import cv2
 import detect_home
+import transform
 import capture_ball
 from cvinput import cvwindows
 from parse_args import args
 from kmeans import kmeans
-from utils import Reader, Obj
+from utils import Reader, Obj, show_contours
 from filtering import filter_img
 
 params = Obj(
     useKmeans=False,
-    kmeans_k=6
+    kmeans_k=6,
+    transform_resolution=(600, 1024)
 )
 
 def main():
@@ -27,7 +30,8 @@ def main():
 
     #setting up detect_home and capture_ball params
     # detect_home.setUp({"debugging":args.debugging})
-    capture_ball.setUp({"debugging":args.debugging})
+    transform.setUp({"debugging":args.debugging})
+    # capture_ball.setUp({"debugging":args.debugging})
 
     while cvwindows.event_loop():
         # reading a frame
@@ -55,6 +59,10 @@ def main():
         home_tracking.append(homes)
 
         # transform the frame
+        rect = cv2.minAreaRect(homes[0])
+        box = cv2.cv.BoxPoints(rect)
+        box = np.array(box)
+        warped = transform.four_point_transform(gray, box)
 
         # finding the ball
         balls = capture_ball.get_ball(gray, mog2, kernel)
@@ -74,6 +82,8 @@ def main():
     cvwindows.clear()
 
     # draw final result
+    # draw_result()
+
     reader.restart_reading()
     frame = reader.read()
 
@@ -83,13 +93,28 @@ def main():
     cv2.imshow("tracking", frame)
     cv2.waitKey()
 
+    cv2.destroyAllWindows()
+
+def draw_result(homes, balls, ball_func):
+    result = np.zeros(params.transform_resolution)
+    home = homeAVG(homes)
+    cv2.drawContours(result, [home.astype('int32')], -1, (255, 255, 255), cv2.cv.CV_FILLED)
+    for balls in ball_tracking:
+        for center, radius in balls:
+            cv2.circle(result, (int(center[0]), int(center[1])), int(radius), (0, 255, 0), 1)
+    cv2.imshow('RESULT', result)
+
+def homeAVG(homes):
+    home = np.mean(homes, 0)
+    return home
+
 def setUp_Reader(reader):
     folder_path = os.listdir("videos")
     folder_path.sort()
     path = 'videos/' + folder_path[args.test_folder] + '/'
-    params = {}
-    params["folder_path"] = path
-    reader.setUp(params)
+    reader_params = {}
+    reader_params["folder_path"] = path
+    reader.setUp(reader_params)
 
 def setUp(nparams):
     params.setattr(nparams)

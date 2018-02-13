@@ -23,6 +23,16 @@ def get_ball(frame, fgbg=None, kernel=None):
     filters = [filter_by_radius]
     balls = filter_by(frame, filters, contours)
 
+    # if params.debugging:
+    #     cv2.destroyWindow('all contours')
+    #     cv2.destroyWindow('working cnt in filter by radius')
+    #     cv2.destroyWindow('Enclosing circle of working cnt in filter by radius')
+    #     cv2.destroyWindow('filters balls by radius')
+    #     if params.useKmeans:
+    #         cv2.destroyWindow('Kmeans')
+    #     else:
+    #         cv2.destroyWindow('Background Subtractor')
+
     return balls
 
 def get_mask(frame, fgbg, kernel):
@@ -35,7 +45,7 @@ def get_mask(frame, fgbg, kernel):
         if kernel is not None:
             fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         if params.debugging:
-            cv2.imshow('BackgroundSubtractorMOG2', fgmask)
+            cv2.imshow('Background Subtractor', fgmask)
     return fgmask
 
 def filter_by(frame, filters, contours):
@@ -59,11 +69,9 @@ def filter_by_radius(frame, contours):
         #     ellipse = cv2.fitEllipse(cnt)
         #     # cv2.ellipse(preview, ellipse, (0, 255, 0), 1)
         #     e_center = ellipse[0]
-        #     e_radius = ellipse[1][0]
+        #     e_radius = ellipse[1][0]/2
         #     cv2.circle(preview, (int(e_center[0]), int(e_center[1])), int(e_radius), (0, 255, 0), 1)
         #     cv2.imshow('ellipse', preview)
-        #     cv2.waitKey(0)
-        #     cv2.destroyWindow('ellipse')
 
         #####################################################################
 
@@ -84,6 +92,7 @@ def filter_by_radius(frame, contours):
 
     if params.debugging:
         draw_balls(balls, frame, 'filters balls by radius')
+        # cv2.waitKey(0)
 
     return balls
 

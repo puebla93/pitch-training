@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 from refine_corner import refining_corners
-from utils import show_contours, draw_lines, Obj
+from utils import show_contours, draw_home_lines, Obj
 
 params = Obj(
     debugging=False,
@@ -132,8 +132,8 @@ def filter_by_sidesRatio(frame, contours):
                 print "discarded by min(blue) sides: ", percent_min_sides
             if percent_middel_sides > params.percentSideRatio:
                 print "discarded by middel(green) sides: ", percent_middel_sides
-            draw_lines(lines, frame, 'lines')
-            draw_lines(refined_lines, frame, 'refined_corners')
+            draw_home_lines(lines, frame, 'lines')
+            draw_home_lines(refined_lines, frame, 'refined_corners')
             cv2.waitKey(0)
 
     filter_contours = np.array(filter_contours)
@@ -148,15 +148,22 @@ def filter_by_sidesRatio(frame, contours):
 
 def filter_by_angles(frame, contours):
     for cnt in contours:
+        lines = get_lines_sorted_by_dist(cnt)
+
         ###############################################
+        # aproximar por un rectangulo
 
         # rect = cv2.minAreaRect(cnt)
-        # box = cv2.boxPoints(rect)
+        # box = cv2.cv.BoxPoints(rect)
+        # a = ((box[0][0] - box[1][0])**2 + (box[0][1] - box[1][1])**2)**.5
+        # b = ((box[1][0] - box[2][0])**2 + (box[1][1] - box[2][1])**2)**.5
+        # print abs(a - b)
         # box = np.int0(box)
         # show_contours([box], frame, 'Rect')
         # cv2.waitKey(0)
 
         ###############################################
+
         break
 
     return contours

@@ -68,7 +68,7 @@ def draw_balls(balls, frame, window_name):
         cv2.circle(preview, (int(ball[0][0]), int(ball[0][1])), int(ball[1]), (0, 255, 0), 1)
     cv2.imshow(window_name, preview)
 
-def draw_lines(lines, frame, window_name):
+def draw_home_lines(lines, frame, window_name):
     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
     cv2.line(preview, (lines[0][0][0], lines[0][0][1]), (lines[0][1][0], lines[0][1][1]), (255, 0, 0), 1)
     cv2.line(preview, (lines[1][0][0], lines[1][0][1]), (lines[1][1][0], lines[1][1][1]), (255, 0, 0), 1)
