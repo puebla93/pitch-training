@@ -28,11 +28,12 @@ def main():
     mog2 = cv2.BackgroundSubtractorMOG2()
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
-    #setting up detect_home and capture_ball params
+    # setting up detect_home and capture_ball params
     # detect_home.setUp({"debugging":args.debugging})
     transform.setUp({"debugging":args.debugging})
     # capture_ball.setUp({"debugging":args.debugging})
 
+    # loop
     while cvwindows.event_loop():
         # reading a frame
         frame = reader.read()
@@ -49,7 +50,7 @@ def main():
                 cv2.imshow('kmeans', gray)
                 cv2.waitKey(0)
 
-        #finding a list of homes
+        # finding a list of homes
         homes = detect_home.get_homes(gray)
         if homes is None or len(homes) == 0:
             print reader.get_actualFrame()
@@ -60,8 +61,7 @@ def main():
 
         # transform the frame
         rect = cv2.minAreaRect(homes[0])
-        box = cv2.cv.BoxPoints(rect)
-        box = np.array(box)
+        box = np.array(cv2.cv.BoxPoints(rect))
         warped = transform.four_point_transform(gray, box)
 
         # finding the ball
