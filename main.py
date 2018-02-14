@@ -7,7 +7,7 @@ import capture_ball
 from cvinput import cvwindows
 from parse_args import args
 from kmeans import kmeans
-from utils import Reader, Obj, show_contours
+from utils import Reader, Obj, show_contours, HomePlate
 from filtering import filter_img
 
 params = Obj(
@@ -56,8 +56,18 @@ def main():
             print reader.get_actualFrame()
             continue
 
+        h = HomePlate(homes[0])
+        # preview = frame.copy()
+        # cv2.drawContours(preview, homes[0].astype('int32'), 0, (255, 0, 0), 3)
+        # cv2.drawContours(preview, homes[0].astype('int32'), 1, (0, 255, 0), 3)
+        # cv2.drawContours(preview, homes[0].astype('int32'), 2, (0, 0, 255), 3)
+        # cv2.drawContours(preview, homes[0].astype('int32'), 3, (255, 255, 255), 3)
+        # cv2.drawContours(preview, homes[0].astype('int32'), 4, (255, 0, 255), 3)
+        # cv2.imshow("aa", preview)
+        # cv2.waitKey(0)
+
         # keep the best home
-        home_tracking.append(homes)
+        home_tracking.append(homes[0])
 
         # transform the frame
         rect = cv2.minAreaRect(homes[0])

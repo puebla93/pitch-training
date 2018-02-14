@@ -1,8 +1,7 @@
 import os
 import cv2
 import numpy as np
-from refine_corner import refining_corners
-from utils import show_contours, draw_home_lines, Obj
+from utils import show_contours, draw_home_lines, Obj, refining_corners, angle
 
 params = Obj(
     debugging=False,
@@ -148,7 +147,7 @@ def filter_by_sidesRatio(frame, contours):
 
 def filter_by_angles(frame, contours):
     for cnt in contours:
-        lines = get_lines_sorted_by_dist(cnt)
+        angles = get_angles_sorted_by_magnitude(cnt)
 
         ###############################################
         # aproximar por un rectangulo
@@ -174,6 +173,25 @@ def get_lines_sorted_by_dist(points):
         lines.append([points[i][0], points[i+1][0]])
     lines.sort(key = (lambda line : ((line[0][0] - line[1][0])**2+(line[0][1] - line[1][1])**2)**.5))
     return lines
+
+def get_angles_sorted_by_magnitude(points):
+    lines = get_lines_sorted_by_dist(points)    
+    angles = []
+    lines_tuple = [(0,4), (1,4), (2,3)]
+
+    vectorA = abs(lines[0][0][0] - lines[0][1][0]), abs(lines[0][0][1] - lines[0][1][1])
+    vectorB = abs(lines[1][0][0] - lines[1][1][0]), abs(lines[1][0][1] - lines[1][1][1])
+    vectorC = abs(lines[4][0][0] - lines[4][1][0]), abs(lines[4][0][1] - lines[4][1][1])
+    
+    angles.append(angle(vectorA, vectorC))
+    angles.append(angle(vectorB, vectorC))
+    
+    vectorD = abs(lines[2][0][0] - lines[2][1][0]), abs(lines[2][0][1] - lines[2][1][1])
+    vectorE = abs(lines[3][0][0] - lines[3][1][0]), abs(lines[3][0][1] - lines[3][1][1])
+    angles.append(angle(vectorD, vectorE))
+
+    angles.sort()
+    return angles
 
 def get_dist(lines):
     dist = []

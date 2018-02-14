@@ -5,7 +5,12 @@ from utils import Obj
 
 params = Obj(
     debugging=False,
-    transform_resolution=(1024, 600)
+    transform_resolution=(1024, 600),
+    dst=np.array([
+        [950, 275],
+       	[1000, 275],
+        [1000, 325],
+        [950, 325]], dtype="float32")
 )
 
 def order_points(pts):
@@ -36,18 +41,8 @@ def four_point_transform(image, pts):
 	# individually
     rect = order_points(pts)
 
-	# construct the set of destination points to obtain a "birds eye view",
-	# (i.e. top-down view) of the image, again specifying points in the
-	# top-left, top-right, bottom-right, and bottom-left order
-    # dst = np.array([
-    #    	[0, 0],
-    #    	[maxWidth - 1, 0],
-    #     [maxWidth - 1, maxHeight - 1],
-    #     [0, maxHeight - 1]], dtype="float32")
-    dst = np.float32(pts)
-
 	# compute the perspective transform matrix and then apply it
-    M = cv2.getPerspectiveTransform(rect, dst)
+    M = cv2.getPerspectiveTransform(rect, params.dst)
     warped = cv2.warpPerspective(image, M, params.transform_resolution)
 
     if params.debugging:
