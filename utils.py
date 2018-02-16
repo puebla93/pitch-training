@@ -4,13 +4,15 @@ import numpy as np
 
 class Obj(object):
     def __init__(self, **kwarg):
-        for k, v in kwarg.items():
-            self.__setattr__(k, v)
+        self.setattr(kwarg)
+    
     def setattr(self, kwarg):
         for k, v in kwarg.items():
             self.__setattr__(k, v)
+    
     def __repr__(self):
         return str(self.__dict__)
+    
     def __str__(self):
         return str(self.__dict__)
 
@@ -56,26 +58,19 @@ class Reader():
 
 class HomePlate():
     def __init__(self, cnt):
-        self.cnt = cnt
-        pt0, pt1, pt2, pt3, pt4 = self.__split_cnt__(cnt)
-        self.ordered_pts = self.__find_order__(pt0, pt1, pt2, pt3, pt4)
+        self.contour = cnt
+        pts = [pt[0] for pt in cnt]
+        self.ordered_pts = self.__find_order__(pts)
 
-    def __find_order__(self, pt0, pt1, pt2, pt3, pt4):
-        alpha0 = angle(np.abs(pt4-pt0), np.abs(pt1-pt0))
-        alpha1 = angle(np.abs(pt0-pt1), np.abs(pt2-pt1))
-        alpha2 = angle(np.abs(pt1-pt2), np.abs(pt3-pt2))
-        alpha3 = angle(np.abs(pt2-pt3), np.abs(pt4-pt3))
-        alpha4 = angle(np.abs(pt3-pt4), np.abs(pt0-pt4))
+    def __find_order__(self, pts):
+        pt0, pt1, pt2, pt3, pt4 = pts
+        alpha0 = angle(pt4-pt0, pt1-pt0)
+        alpha1 = angle(pt0-pt1, pt2-pt1)
+        alpha2 = angle(pt1-pt2, pt3-pt2)
+        alpha3 = angle(pt2-pt3, pt4-pt3)
+        alpha4 = angle(pt3-pt4, pt0-pt4)
 
         return pt0, pt1, pt2, pt3, pt4
-
-    def __split_cnt__(self, cnt):
-        pt0 = cnt[0][0]
-        pt1 = cnt[1][0]
-        pt2 = cnt[2][0]
-        pt3 = cnt[3][0]
-        pt4 = cnt[4][0]
-        return  pt0, pt1, pt2, pt3, pt4
 
 def show_contours(cnt, frame, window_name):
     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
@@ -101,6 +96,12 @@ def draw_home_lines(lines, frame, window_name):
     cv2.line(preview, (lines[3][0][0], lines[3][0][1]), (lines[3][1][0], lines[3][1][1]), (0, 255, 0), 1)
     cv2.line(preview, (lines[4][0][0], lines[4][0][1]), (lines[4][1][0], lines[4][1][1]), (0, 0, 255), 1)
     cv2.imshow(window_name, preview)
+
+def get_dist(lines):
+    dist = []
+    for line in lines:
+        dist.append(((line[0][0] - line[1][0])**2+(line[0][1] - line[1][1])**2)**.5)
+    return dist
 
 def refining_corners(gray, corners, winSize):
     # termination criteria

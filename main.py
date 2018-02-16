@@ -29,10 +29,11 @@ def main():
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
     # setting up detect_home and capture_ball params
-    # detect_home.setUp({"debugging":args.debugging})
+    detect_home.setUp({"debugging":args.debugging})
     transform.setUp({"debugging":args.debugging})
-    # capture_ball.setUp({"debugging":args.debugging})
+    capture_ball.setUp({"debugging":args.debugging})
 
+    # reader._actual_frame = 473
     # loop
     while cvwindows.event_loop():
         # reading a frame
@@ -56,23 +57,14 @@ def main():
             print reader.get_actualFrame()
             continue
 
-        h = HomePlate(homes[0])
-        # preview = frame.copy()
-        # cv2.drawContours(preview, homes[0].astype('int32'), 0, (255, 0, 0), 3)
-        # cv2.drawContours(preview, homes[0].astype('int32'), 1, (0, 255, 0), 3)
-        # cv2.drawContours(preview, homes[0].astype('int32'), 2, (0, 0, 255), 3)
-        # cv2.drawContours(preview, homes[0].astype('int32'), 3, (255, 255, 255), 3)
-        # cv2.drawContours(preview, homes[0].astype('int32'), 4, (255, 0, 255), 3)
-        # cv2.imshow("aa", preview)
-        # cv2.waitKey(0)
-
         # keep the best home
-        home_tracking.append(homes[0])
+        home = homes[0]
+        home_tracking.append(home)
 
         # transform the frame
-        rect = cv2.minAreaRect(homes[0])
+        rect = cv2.minAreaRect(home)
         box = np.array(cv2.cv.BoxPoints(rect))
-        warped = transform.four_point_transform(gray, box)
+        # warped = transform.homePlate_transform(gray, home)
 
         # finding the ball
         balls = capture_ball.get_ball(gray, mog2, kernel)
@@ -87,6 +79,8 @@ def main():
         camera.show(contours_img)
 
         # if len(homes) > 1:
+        #     print "len = ", len(homes)
+        #     print reader.get_actualFrame()
         #     cv2.waitKey(0)
 
     cvwindows.clear()
