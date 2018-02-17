@@ -52,19 +52,19 @@ def main():
                 cv2.waitKey(0)
 
         # finding a list of homes
-        homes = detect_home.get_homes(gray)
-        if homes is None or len(homes) == 0:
+        contours = detect_home.get_homes(gray)
+        if contours is None or len(contours) == 0:
             print reader.get_actualFrame()
             continue
 
         # keep the best home
-        home = homeAVG(homes)
+        home = homeAVG(contours)
         home_tracking.append(home)
 
         # transform the frame
-        rect = cv2.minAreaRect(home)
+        rect = cv2.minAreaRect(home.contour)
         box = np.array(cv2.cv.BoxPoints(rect))
-        # warped = transform.homePlate_transform(gray, home)
+        warped = transform.homePlate_transform(gray, home)
 
         # finding the ball
         balls = capture_ball.get_ball(gray, mog2, kernel)
@@ -73,7 +73,7 @@ def main():
 
         # draw home and the balls trajectory
         contours_img = frame.copy()
-        cv2.drawContours(contours_img, homes.astype('int32'), -1, (0, 0, 255), 2)
+        cv2.drawContours(contours_img, contours.astype('int32'), -1, (0, 0, 255), 2)
         for center, radius in balls:
             cv2.circle(contours_img, (int(center[0]), int(center[1])), int(radius), (0, 255, 0), 1)
         camera.show(contours_img)
@@ -110,7 +110,7 @@ def draw_result(home_tracking, ball_tracking, ball_func):
 
 def homeAVG(homes):
     home = np.mean(homes, 0)
-    return home
+    return HomePlate(home)
 
 def setUp_Reader(reader):
     folder_path = os.listdir("videos")

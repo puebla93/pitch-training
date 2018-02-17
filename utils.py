@@ -63,15 +63,28 @@ class HomePlate():
         self.ordered_pts = self.__find_order__(pts)
 
     def __find_order__(self, pts):
-        pt0, pt1, pt2, pt3, pt4 = pts
-        alpha0 = angle(pt4-pt0, pt1-pt0)
-        alpha1 = angle(pt0-pt1, pt2-pt1)
-        alpha2 = angle(pt1-pt2, pt3-pt2)
-        alpha3 = angle(pt2-pt3, pt4-pt3)
-        alpha4 = angle(pt3-pt4, pt0-pt4)
-        angles = [alpha0, alpha1, alpha2, alpha3, alpha4]
+        angles = []
+        angles.append(angle(pts[4]-pts[0], pts[1]-pts[0]))
+        angles.append(angle(pts[0]-pts[1], pts[2]-pts[1]))
+        angles.append(angle(pts[1]-pts[2], pts[3]-pts[2]))
+        angles.append(angle(pts[2]-pts[3], pts[4]-pts[3]))
+        angles.append(angle(pts[3]-pts[4], pts[0]-pts[4]))
 
-        return pt0, pt1, pt2, pt3, pt4
+        if self.__rigth_angles_order__(angles):
+            return pts
+        elif self.__rigth_angles_order__(np.roll(angles, 1)):
+            return np.roll(pts, 1)
+        elif self.__rigth_angles_order__(np.roll(angles, 2)):
+            return np.roll(pts, 2)
+        elif self.__rigth_angles_order__(np.roll(angles, 3)):
+            return np.roll(pts, 3)
+        elif self.__rigth_angles_order__(np.roll(angles, 4)):
+            return np.roll(pts, 4)
+        return pts
+
+    def __rigth_angles_order__(self, angles):
+        # angles most to be approx [90, 135, 90, 90, 135]
+        return np.allclose(angles, [90, 135, 90, 90, 135], 0, 5)
 
 def show_contours(cnt, frame, window_name):
     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
