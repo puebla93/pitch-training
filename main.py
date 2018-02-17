@@ -62,12 +62,11 @@ def main():
         home_tracking.append(home)
 
         # transform the frame
-        rect = cv2.minAreaRect(home.contour)
-        box = np.array(cv2.cv.BoxPoints(rect))
         warped = transform.homePlate_transform(gray, home)
 
         # finding the ball
-        balls = capture_ball.get_ball(gray, mog2, kernel)
+        balls = capture_ball.get_ball(warped, mog2, kernel)
+        # balls = capture_ball.get_ball(gray, mog2, kernel)
         if len(balls) > 0:
             ball_tracking.append(balls)
 

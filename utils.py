@@ -59,7 +59,7 @@ class Reader():
 class HomePlate():
     def __init__(self, cnt):
         self.contour = cnt
-        pts = [pt[0] for pt in cnt]
+        pts = np.array([pt[0] for pt in cnt])
         self.ordered_pts = self.__find_order__(pts)
 
     def __find_order__(self, pts):

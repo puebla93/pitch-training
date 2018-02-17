@@ -23,15 +23,13 @@ def get_ball(frame, fgbg=None, kernel=None):
     filters = [filter_by_radius]
     balls = filter_by(frame, filters, contours)
 
-    # if params.debugging:
-    #     cv2.destroyWindow('all contours')
-    #     cv2.destroyWindow('working cnt in filter by radius')
-    #     cv2.destroyWindow('Enclosing circle of working cnt in filter by radius')
-    #     cv2.destroyWindow('filters balls by radius')
-    #     if params.useKmeans:
-    #         cv2.destroyWindow('Kmeans')
-    #     else:
-    #         cv2.destroyWindow('Background Subtractor')
+    if params.debugging:
+        cv2.destroyWindow('filters balls by radius')
+        if params.useKmeans:
+            cv2.destroyWindow('Kmeans')
+        else:
+            cv2.destroyWindow('Background Subtractor')
+        print "\GET BALL DONE!!!\n"        
 
     return balls
 
@@ -62,19 +60,6 @@ def filter_by_radius(frame, contours):
         if params.debugging:
             show_contours([cnt], frame, 'working cnt in filter by radius')
 
-        ####################################################################
-
-        # if len(cnt) > 4:
-        #     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-        #     ellipse = cv2.fitEllipse(cnt)
-        #     # cv2.ellipse(preview, ellipse, (0, 255, 0), 1)
-        #     e_center = ellipse[0]
-        #     e_radius = ellipse[1][0]/2
-        #     cv2.circle(preview, (int(e_center[0]), int(e_center[1])), int(e_radius), (0, 255, 0), 1)
-        #     cv2.imshow('ellipse', preview)
-
-        #####################################################################
-
         (x, y), radius = cv2.minEnclosingCircle(cnt)
         center = x, y
 
@@ -91,6 +76,9 @@ def filter_by_radius(frame, contours):
             cv2.waitKey(0)
 
     if params.debugging:
+        cv2.destroyWindow('working cnt in filter by radius')
+        cv2.destroyWindow('Enclosing circle of working cnt in filter by radius')
+        cv2.destroyWindow('all contours')
         draw_balls(balls, frame, 'filters balls by radius')
         # cv2.waitKey(0)
 
