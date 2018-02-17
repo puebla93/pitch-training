@@ -69,6 +69,7 @@ class HomePlate():
         alpha2 = angle(pt1-pt2, pt3-pt2)
         alpha3 = angle(pt2-pt3, pt4-pt3)
         alpha4 = angle(pt3-pt4, pt0-pt4)
+        angles = [alpha0, alpha1, alpha2, alpha3, alpha4]
 
         return pt0, pt1, pt2, pt3, pt4
 

@@ -170,11 +170,11 @@ def filter_by_angles(frame, contours):
             print angles
 
         if params.debugging:
-            show_contours([cnt], frame, 'working cnt in filter by angles')
+            show_contours([cnt.astype('int32')], frame, 'working cnt in filter by angles')
 
     filter_contours = np.array(filter_contours)
     if params.debugging:
-        print '\nFilter By Sides Ratio. DONE!!!\n'        
+        print '\nFilter By Angles. DONE!!!\n'        
         cv2.destroyWindow('working cnt in filter by sides ratio')
         cv2.destroyWindow('filters contours by sides ratio')
         show_contours(filter_contours.astype('int32'), frame, 'filters contours by angles')

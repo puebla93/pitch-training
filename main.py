@@ -58,7 +58,7 @@ def main():
             continue
 
         # keep the best home
-        home = homes[0]
+        home = homeAVG(homes)
         home_tracking.append(home)
 
         # transform the frame
@@ -99,9 +99,9 @@ def main():
 
     cv2.destroyAllWindows()
 
-def draw_result(homes, balls, ball_func):
+def draw_result(home_tracking, ball_tracking, ball_func):
     result = np.zeros(params.transform_resolution)
-    home = homeAVG(homes)
+    home = homeAVG(home_tracking)
     cv2.drawContours(result, [home.astype('int32')], -1, (255, 255, 255), cv2.cv.CV_FILLED)
     for balls in ball_tracking:
         for center, radius in balls:
