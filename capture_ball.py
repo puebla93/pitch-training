@@ -1,8 +1,7 @@
 import os
 import numpy as np
 import cv2
-from kmeans import kmeans
-from utils import show_contours, draw_ball, draw_balls, Obj
+from utils import show_contours, draw_ball, draw_balls, Obj, kmeans
 
 params = Obj(
     debugging=False,
@@ -49,7 +48,7 @@ def get_mask(frame):
             fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, params.kernel)
         if params.debugging:
             cv2.imshow('Background Subtractor', fgmask)
-    cv2.waitKey(0)
+    # cv2.waitKey(0)
 
     return fgmask
 

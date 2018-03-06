@@ -6,8 +6,7 @@ import transform
 import capture_ball
 from cvinput import cvwindows
 from parse_args import args
-from kmeans import kmeans
-from utils import Reader, Obj, show_contours, HomePlate
+from utils import Reader, Obj, show_contours, HomePlate, kmeans
 from filtering import filter_img
 
 params = Obj(
@@ -26,8 +25,8 @@ def main():
     ball_tracking = []
 
     # setting up detect_home and capture_ball params
-    # detect_home.setUp({"debugging":args.debugging})
-    # transform.setUp({"debugging":args.debugging})
+    detect_home.setUp({"debugging":args.debugging})
+    transform.setUp({"debugging":args.debugging})
     capture_ball.setUp({"debugging":args.debugging})
 
     # reader._actual_frame = 473
