@@ -25,12 +25,9 @@ def main():
     home_tracking = []
     ball_tracking = []
 
-    mog2 = cv2.BackgroundSubtractorMOG2()
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-
     # setting up detect_home and capture_ball params
-    detect_home.setUp({"debugging":args.debugging})
-    transform.setUp({"debugging":args.debugging})
+    # detect_home.setUp({"debugging":args.debugging})
+    # transform.setUp({"debugging":args.debugging})
     capture_ball.setUp({"debugging":args.debugging})
 
     # reader._actual_frame = 473
@@ -65,8 +62,8 @@ def main():
         warped = transform.homePlate_transform(gray, home)
 
         # finding the ball
-        balls = capture_ball.get_ball(warped, mog2, kernel)
-        # balls = capture_ball.get_ball(gray, mog2, kernel)
+        # balls = capture_ball.get_ball(warped)
+        balls = capture_ball.get_ball(gray)
         if len(balls) > 0:
             ball_tracking.append(balls)
 

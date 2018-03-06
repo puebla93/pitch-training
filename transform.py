@@ -31,7 +31,6 @@ def homePlate_transform(frame, home):
     square = get_home_square(home)
 
 	# compute the perspective transform matrix and then apply it
-    # M = cv2.getPerspectiveTransform(square, params.dst)
     M = cv2.getPerspectiveTransform(square, params.dst)
     warped = cv2.warpPerspective(frame, M, params.transform_resolution)
     
@@ -39,7 +38,7 @@ def homePlate_transform(frame, home):
         cv2.imshow("Warped", warped)
         cv2.waitKey(0)
         cv2.destroyWindow('Warped')
-        print "\nTRANSFORM FRAME DONE!!!\n"        
+        print "TRANSFORM FRAME DONE!!!\n"        
     
 	# return the warped frame
     return warped
