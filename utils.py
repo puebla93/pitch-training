@@ -80,7 +80,7 @@ class HomePlate():
             return np.roll(pts, 3)
         elif self.__rigth_angles_order__(np.roll(angles, 4)):
             return np.roll(pts, 4)
-        return pts
+        return None
 
     def __rigth_angles_order__(self, angles):
         # angles most to be approx [90, 135, 90, 90, 135]
@@ -123,10 +123,10 @@ def refining_corners(gray, corners, winSize):
 
     cv2.cornerSubPix(gray, corners, winSize, (-1, -1), criteria)
 
-def angle(pt1, pt2):
-    x1, y1 = pt1
-    x2, y2 = pt2
-    inner_product = np.inner(pt1, pt2)
+def angle(v1, v2):
+    x1, y1 = v1
+    x2, y2 = v2
+    inner_product = np.inner(v1, v2)
     len1 = math.hypot(x1, y1)
     len2 = math.hypot(x2, y2)
 
