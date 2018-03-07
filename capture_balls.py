@@ -13,7 +13,7 @@ params = Obj(
     kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 )
 
-def get_ball(frame):
+def get_balls(frame):
     mask = get_mask(frame)
 
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)

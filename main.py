@@ -1,9 +1,9 @@
 import os
 import numpy as np
 import cv2
-import detect_home
+import detect_homes
 import transform
-import capture_ball
+import capture_balls
 from cvinput import cvwindows
 from parse_args import args
 from utils import Reader, Obj, show_contours, HomePlate, kmeans
@@ -24,10 +24,10 @@ def main():
     home_tracking = []
     ball_tracking = []
 
-    # setting up detect_home and capture_ball params
-    # detect_home.setUp({"debugging":args.debugging})
+    # setting up detect_homes and capture_balls params
+    # detect_homes.setUp({"debugging":args.debugging})
     transform.setUp({"debugging":args.debugging})
-    # capture_ball.setUp({"debugging":args.debugging})
+    # capture_balls.setUp({"debugging":args.debugging})
 
     # reader._actual_frame = 473
     # loop
@@ -48,7 +48,7 @@ def main():
                 cv2.waitKey(0)
 
         # finding a list of homes
-        contours = detect_home.get_homes(gray)
+        contours = detect_homes.get_homes(gray)
         if contours is None or len(contours) == 0:
             print reader.get_actualFrame()
             continue
@@ -61,8 +61,8 @@ def main():
         warped = transform.homePlate_transform(gray, home)
 
         # finding the ball
-        # balls = capture_ball.get_ball(warped)
-        balls = capture_ball.get_ball(gray)
+        # balls = capture_balls.get_ball(warped)
+        balls = capture_balls.get_balls(gray)
         if len(balls) > 0:
             ball_tracking.append(balls)
 
