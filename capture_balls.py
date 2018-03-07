@@ -7,8 +7,8 @@ params = Obj(
     debugging=False,
     useKmeans=False,
     kmeans_k=6,
-    max_percentRadius=10,
-    min_percentRadius=1.5,
+    max_radiusPercent=.01,
+    min_radiusPercent=.002,
     fgbg=cv2.BackgroundSubtractorMOG2(),
     kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 )
@@ -62,11 +62,13 @@ def filter_by_radius(frame, contours):
     balls = []
     centers = []
     radiuses = []
+    frame_size = frame.shape[0] * frame.shape[1]    
     for cnt in contours:
         (x, y), radius = cv2.minEnclosingCircle(cnt)
         center = x, y
+        radiusPercent = 100 * radius / frame_size
 
-        if radius > params.max_percentRadius or radius < params.min_percentRadius:
+        if radiusPercent > params.max_radiusPercent or radiusPercent < params.min_radiusPercent:
             if params.debugging:
                 print "discarded by radius"
         else:
