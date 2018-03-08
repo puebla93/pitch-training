@@ -18,35 +18,37 @@ class Obj(object):
 
 class Reader():
     def __init__(self):
-        self._actual_frame = -1
+        self._frameNumber = -1
+        self.actualFrame = None
         self.__setDefaults__()
         self.capture = None
         if self.params.read_from == "camera":
             self.capture = cv2.VideoCapture(self.params.camera_index)
 
     def read(self):
-        self._actual_frame += 1
+        self._frameNumber += 1
         if self.params.read_from == "camera":
-            return self.capture.read()[1]
+            self.actualFrame = self.capture.read()[1]
         if self.params.read_from == "folder":
-            path = self.params.folder_path + str(self._actual_frame) + self.params.frame_type
-            frame = cv2.imread(path)
-            return frame
+            path = self.params.folder_path + str(self._frameNumber) + self.params.frame_type
+            self.actualFrame = cv2.imread(path)
+        return self.actualFrame
 
     def restart_reading(self):
+        self.actualFrame = None
         if self.params.read_from == "camera":
             self.capture.release()
             self.capture = cv2.VideoCapture(self.params.camera_index)
         elif self.params.read_from == "folder":
-            self._actual_frame = 0
+            self._frameNumber = 0
 
     def setUp(self, nparams):
         self.params.setattr(nparams)
         if nparams.has_key("read_from") and nparams["read_from"] == "camera" and self.capture is None:
             self.capture = cv2.VideoCapture(self.params.camera_index)
 
-    def get_actualFrame(self):
-        return self._actual_frame
+    def get_frameNumber(self):
+        return self._frameNumber
 
     def __setDefaults__(self):
         self.params = Obj(

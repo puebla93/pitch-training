@@ -15,6 +15,16 @@ params = Obj(
     transform_resolution=(600, 1024)
 )
 
+def main2():
+    from pitch_trainig import PitchTrainig
+    pitchTrainig = PitchTrainig()
+    while True:
+        home = pitchTrainig.calibrateHome()
+
+        PTM, user_homePlate_cnt = pitchTrainig.computeTransform(home)
+
+        pitchTrainig.waitBalls(PTM)
+
 def main():
     camera = cvwindows.create('camera')
 
@@ -24,8 +34,8 @@ def main():
     ball_tracking = []
 
     # setting up detect_homes and capture_balls params
-    # detect_homes.setUp({"debugging":args.debugging})
-    # transform.setUp({"debugging":args.debugging})
+    detect_homes.setUp({"debugging":args.debugging})
+    transform.setUp({"debugging":args.debugging})
     capture_balls.setUp({"debugging":args.debugging})
     
     home = calibratingHome(reader)
