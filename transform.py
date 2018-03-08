@@ -30,30 +30,38 @@ def homePlate_transform(frame, home):
     # compute the destination points of the perspective transform square
     home_width = params.transform_resolution[1] * params.size_homePercenct
     x14 = params.transform_resolution[0] - params.transform_resolution[0] * .01
-    x23 = params.transform_resolution[0] - home_width
+    x23 = x14 - home_width
     y12 = (params.transform_resolution[1] + home_width)/2.
-    y34 = (params.transform_resolution[1] - home_width)/2.
+    y34 = y12 - home_width
     dst=np.array([
         [x14, y12],
         [x23, y12],
         [x23 , y34],
         [x14, y34]], dtype="float32")
 
-	# compute the perspective transform matrix and then apply it
-    M = cv2.getPerspectiveTransform(square, dst)
-    warped = cv2.warpPerspective(frame, M, params.transform_resolution)
-    
+	# compute the perspective transform matrix
+    PTM = cv2.getPerspectiveTransform(square, dst)
+
+    # find the new home plate contour
+    homePlate_cnt = np.array([
+                    [x14, params.transform_resolution[1]/2.],
+                    [x23 + home_width/2., y12],
+                    [x23, y12],
+                    [x23, y34],
+                    [x23 + home_width/2., y34]])
+
     if params.debugging:
+        warped = cv2.warpPerspective(frame, PTM, params.transform_resolution)
         cnt = square.reshape((4,1,2))
         show_contours([cnt.astype('int32')], frame, 'Square')
         cv2.imshow('Warped', warped)
         cv2.waitKey(0)
         cv2.destroyWindow('Warped')
         cv2.destroyWindow('Square')
-        print "TRANSFORM FRAME DONE!!!\n"        
+        print "TRANSFORM FRAME DONE!!!\n"
     
-	# return the warped frame
-    return warped
+	# return the perspective transform matrix
+    return PTM, homePlate_cnt
 
 def setUp(nparams):
     params.setattr(nparams)
