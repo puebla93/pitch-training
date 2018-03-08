@@ -18,7 +18,7 @@ params = Obj(
 def main2():
     from pitch_trainig import PitchTrainig
     pitchTrainig = PitchTrainig()
-    while True:
+    while cvwindows.event_loop():
         home = pitchTrainig.calibrateHome()
 
         PTM, user_homePlate_cnt = pitchTrainig.computeTransform(home)
@@ -26,24 +26,78 @@ def main2():
         pitchTrainig.waitBalls(PTM)
 
 def main():
-    camera = cvwindows.create('camera')
-
     reader = Reader()
     setUp_Reader(reader)
 
-    ball_tracking = []
-
-    # setting up detect_homes and capture_balls params
+    # setting up transform, detect_homes and capture_balls params
     detect_homes.setUp({"debugging":args.debugging})
     transform.setUp({"debugging":args.debugging})
     capture_balls.setUp({"debugging":args.debugging})
     
-    home = calibratingHome(reader)
+    home = calibrateHome(reader)
 
-    frame = reader.read()
-    gray = filter_img(frame)
+    PTM, new_homePlate_cnt = computeTransform(reader, home)
+
+    ball_tracking = waitBalls(reader, PTM)
+
+    # draw final result
+    user_img = draw_result(new_homePlate_cnt, ball_tracking, None)
+    cv2.imshow('RESULT', user_img)
+    cv2.waitKey(0)
+
+    cv2.destroyAllWindows()
+
+def calibrateHome(reader):
+    home_tracking = []
+    while len(home_tracking) < 200:
+        # reading a frame
+        frame = reader.read()
+        if frame is None:
+            break
+
+        # removing noise from image
+        gray = filter_img(frame)
+
+        # using kmeans on the image
+        if params.useKmeans:
+            gray = kmeans(frame, params.kmeans_k)
+            if args.debugging:
+                cv2.imshow('kmeans', gray)
+                cv2.waitKey(0)
+
+        # finding a list of homes
+        contours = detect_homes.get_homes(gray)
+        if contours is None or len(contours) == 0:
+            print reader.get_frameNumber()
+            cv2.waitKey(0)
+            continue
+
+        # keep the best home
+        home = homeAVG(contours)
+        home_tracking.append(home)
+
+        contours_img = frame.copy()
+        cv2.drawContours(contours_img, contours.astype('int32'), -1, (0, 0, 255), 2)
+        cv2.imshow('Homes', contours_img)
+        cv2.waitKey(1)
+
+        if len(contours) > 2:
+            print "len = ", len(contours)
+            print reader.get_frameNumber()
+            cv2.waitKey(0)
+
+    cv2.destroyWindow('Homes')
+    return HomePlate(homeAVG(home_tracking))
+
+def computeTransform(reader, home):
+    gray = filter_img(reader.actualFrame)
     PTM, new_homePlate_cnt = transform.homePlate_transform(gray, home)
+    return PTM, new_homePlate_cnt
 
+def waitBalls(reader, PTM):
+    camera = cvwindows.create('camera')
+    
+    ball_tracking = []
     # loop
     while cvwindows.event_loop():
         # reading a frame
@@ -73,55 +127,7 @@ def main():
         camera.show(frame)
 
     cvwindows.clear()
-
-    # draw final result
-    user_img = draw_result(new_homePlate_cnt, ball_tracking, None)
-    cv2.imshow('RESULT', user_img)
-    cv2.waitKey(0)
-
-    cv2.destroyAllWindows()
-
-def calibratingHome(reader):
-    home_tracking = []
-    while len(home_tracking) < 200:
-        # reading a frame
-        frame = reader.read()
-        if frame is None:
-            break
-
-        # removing noise from image
-        gray = filter_img(frame)
-
-        # using kmeans on the image
-        if params.useKmeans:
-            gray = kmeans(frame, params.kmeans_k)
-            if args.debugging:
-                cv2.imshow('kmeans', gray)
-                cv2.waitKey(0)
-
-        # finding a list of homes
-        contours = detect_homes.get_homes(gray)
-        if contours is None or len(contours) == 0:
-            print reader.get_actualFrame()
-            cv2.waitKey(0)
-            continue
-
-        # keep the best home
-        home = homeAVG(contours)
-        home_tracking.append(home)
-
-        contours_img = frame.copy()
-        cv2.drawContours(contours_img, contours.astype('int32'), -1, (0, 0, 255), 2)
-        cv2.imshow('Homes', contours_img)
-        cv2.waitKey(1)
-
-        if len(contours) > 2:
-            print "len = ", len(contours)
-            print reader.get_actualFrame()
-            cv2.waitKey(0)
-
-    cv2.destroyWindow('Homes')
-    return HomePlate(homeAVG(home_tracking))
+    return ball_tracking
 
 def draw_result(homePlate_cnt, ball_tracking, ball_func):
     user_img = cv2.cvtColor(np.zeros(params.transform_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
