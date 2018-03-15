@@ -30,7 +30,7 @@ def get_balls(frame):
             cv2.destroyWindow('Kmeans')
         else:
             cv2.destroyWindow('Background Subtractor')
-        print "\nGET BALL DONE!!!\n"        
+        print "\nGETTING BALLS DONE!!!\n"        
         draw_balls(balls, frame, 'balls')
         cv2.waitKey(0)
         cv2.destroyWindow('balls')

@@ -33,8 +33,8 @@ def get_homes(frame):
     if params.debugging:
         cv2.destroyWindow('Thresh')
         cv2.destroyWindow('filters contours by angles')
-        print "DETECT HOME DONE!!!\n"
-        show_contours(homes, frame, 'homes')
+        print "DETECTING HOMES DONE!!!\n"
+        show_contours(homes.astype('int32'), frame, 'homes')
         cv2.waitKey(0)
         cv2.destroyWindow('homes')
 

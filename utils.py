@@ -61,7 +61,7 @@ class Reader():
 class HomePlate():
     def __init__(self, cnt):
         self.contour = cnt
-        pts = np.array([pt[0] for pt in cnt])
+        pts = [pt[0] for pt in self.contour]
         self.ordered_pts = self.__find_order__(pts)
 
     def __find_order__(self, pts):
@@ -72,21 +72,17 @@ class HomePlate():
         angles.append(angle(pts[2]-pts[3], pts[4]-pts[3]))
         angles.append(angle(pts[3]-pts[4], pts[0]-pts[4]))
 
-        if self.__rigth_angles_order__(angles):
-            return pts
-        elif self.__rigth_angles_order__(np.roll(angles, 1)):
-            return np.roll(pts, 1)
-        elif self.__rigth_angles_order__(np.roll(angles, 2)):
-            return np.roll(pts, 2)
-        elif self.__rigth_angles_order__(np.roll(angles, 3)):
-            return np.roll(pts, 3)
-        elif self.__rigth_angles_order__(np.roll(angles, 4)):
-            return np.roll(pts, 4)
-        return None
+        indexes = [0, 1, 2, 3, 4]
+        indexes.sort(key=(lambda i: angles[i]), reverse=True)
 
-    def __rigth_angles_order__(self, angles):
-        # angles most to be approx [90, 135, 90, 90, 135]
-        return np.allclose(angles, [90, 135, 90, 90, 135], 0, 5)
+        if indexes[0] + indexes[1] == 5:
+            return pts
+        elif indexes[0] + indexes[1] == 3:
+            return pts[4:] + pts[:4]
+        else:
+            roll = (indexes[0] + indexes[1])/2
+            rolled_pts = pts[roll:] + pts[:roll]
+            return rolled_pts
 
 def show_contours(cnt, frame, window_name):
     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)

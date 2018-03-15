@@ -10,10 +10,10 @@ params = Obj(
 )
 
 def get_home_square(home):
-    pt1 = home.ordered_pts[2] + (abs(home.ordered_pts[2] - home.ordered_pts[1])) * 2
+    pt1 = home.ordered_pts[2] + (home.ordered_pts[1] - home.ordered_pts[2]) * 2
     pt2 = home.ordered_pts[2]
     pt3 = home.ordered_pts[3]
-    pt4 = home.ordered_pts[3] + (abs(home.ordered_pts[3] - home.ordered_pts[4])) * 2
+    pt4 = home.ordered_pts[3] + (home.ordered_pts[4] - home.ordered_pts[3]) * 2
     square = np.array([pt1, pt2, pt3, pt4])
 
     rect = cv2.minAreaRect(square.reshape((4, 1, 2)))
@@ -58,7 +58,7 @@ def homePlate_transform(frame, home):
         cv2.waitKey(0)
         cv2.destroyWindow('Warped')
         cv2.destroyWindow('Square')
-        print "TRANSFORM FRAME DONE!!!\n"
+        print "TRANSFORMING FRAME DONE!!!\n"
     
 	# return the perspective transform matrix
     return PTM, homePlate_cnt
