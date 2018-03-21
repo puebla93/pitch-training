@@ -60,19 +60,17 @@ def filter_by(frame, filters, contours):
 
 def filter_by_radius(frame, contours):
     balls = []
-    centers = []
-    radiuses = []
     frame_size = frame.shape[0] * frame.shape[1]    
     for cnt in contours:
         (x, y), radius = cv2.minEnclosingCircle(cnt)
-        center = x, y
+        center = np.array([x, y])
         radiusPercent = 100 * radius / frame_size
 
         if radiusPercent > params.max_radiusPercent or radiusPercent < params.min_radiusPercent:
             if params.debugging:
                 print "discarded by radius"
         else:
-            balls.append((center, radius))
+            balls.append(np.array([center, radius]))
             if params.debugging:
                 print "carded by radius"
 
@@ -88,7 +86,7 @@ def filter_by_radius(frame, contours):
         draw_balls(balls, frame, 'filters balls by radius')
         cv2.waitKey(0)
 
-    return balls
+    return np.array(balls)
 
 def setUp(nparams):
     params.setattr(nparams)

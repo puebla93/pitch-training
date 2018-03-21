@@ -1,6 +1,7 @@
 import math
 import cv2
 import numpy as np
+import scipy.optimize as optimization
 
 class Obj(object):
     def __init__(self, **kwarg):
@@ -83,6 +84,23 @@ class HomePlate():
             roll = (indexes[0] + indexes[1])/2
             rolled_pts = pts[roll:] + pts[:roll]
             return rolled_pts
+
+class QuadraticLeastSquaresModel:
+    def __init__(self):
+        self.func = lambda x, a, b, c : a+b*x+c*x*x
+
+    def fit(self, data):
+        x, y = data[:, 0], data[:, 1]
+        x0 = np.array([0.0, 0.0, 0.0])
+        sigma = np.ones(data.shape[0], 'float32')
+        values, _ = optimization.curve_fit(self.func, x, y, x0, sigma)
+        return values
+
+    def get_error(self, data, model):
+        x, y = data[:, 0], data[:, 1]
+        y_fit = self.func(x, model[0], model[1], model[2])
+        err_per_point = (y - y_fit)**2 # sum squared error per row
+        return err_per_point
 
 def show_contours(cnt, frame, window_name):
     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)

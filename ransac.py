@@ -1,11 +1,11 @@
 import numpy as np
 import scipy
-from utils import Obj, LinearLeastSquaresModel
+from utils import Obj, QuadraticLeastSquaresModel
 
 params = Obj(
     debugging=False,
     # a model that can be fitted to data points
-    model=LinearLeastSquaresModel(),
+    model=QuadraticLeastSquaresModel(),
     # the minimum number of data values required to fit the model
     n=3,
     # the maximum number of iterations allowed in the algorithm
@@ -28,8 +28,8 @@ def ransac(data, d, return_all=False):
     best_inlier_idxs = None
 
     while iterations < params.max_iters:
-        # maybe_idxs, test_idxs = random_partition(params.n, data.shape[0])
-        maybe_idxs, test_idxs = random_partition(params.n, data)
+        maybe_idxs, test_idxs = random_partition(params.n, data.shape[0])
+        # maybe_idxs, test_idxs = random_partition(params.n, data)
         maybeinliers = data[maybe_idxs, :]
         test_points = data[test_idxs]
 
@@ -66,16 +66,16 @@ def ransac(data, d, return_all=False):
     else:
         return bestfit
 
-# def random_partition(n, n_data):
-def random_partition(n, data):
+def random_partition(n, n_data):
+# def random_partition(n, data):
     """return n random rows of data (and also the other len(data)-n rows)"""
 
-    # all_idxs = np.arange(n_data)
-    # np.random.shuffle(all_idxs)
-    # idxs1 = all_idxs[:n]
-    # idxs2 = all_idxs[n:]
+    all_idxs = np.arange(n_data)
+    np.random.shuffle(all_idxs)
+    idxs1 = all_idxs[:n]
+    idxs2 = all_idxs[n:]
 
-    # return idxs1, idxs2
+    return idxs1, idxs2
 
     all_idxs = np.arange(data.shape[0])
     np.random.shuffle(all_idxs)

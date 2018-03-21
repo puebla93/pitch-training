@@ -8,6 +8,7 @@ from cvinput import cvwindows
 from parse_args import args
 from utils import Reader, Obj, show_contours, HomePlate, kmeans
 from filtering import filter_img
+from ransac import ransac
 
 params = Obj(
     useKmeans=False,
@@ -33,15 +34,17 @@ def main():
     detect_homes.setUp({"debugging":args.debugging})
     transform.setUp({"debugging":args.debugging})
     capture_balls.setUp({"debugging":args.debugging})
-    
+
     home = calibrateHome(reader)
 
     PTM, new_homePlate_cnt = computeTransform(reader, home)
 
-    ball_tracking = waitBalls(reader, PTM)
+    balls_tracked = waitBalls(reader, PTM)
+
+    model, ball_idxs = get_ballFunc(balls_tracked)
 
     # draw final result
-    user_img = draw_result(new_homePlate_cnt, ball_tracking, None)
+    user_img = draw_result(new_homePlate_cnt, balls_tracked, None)
     cv2.imshow('RESULT', user_img)
     cv2.waitKey(0)
 
@@ -97,7 +100,7 @@ def computeTransform(reader, home):
 def waitBalls(reader, PTM):
     camera = cvwindows.create('camera')
     
-    ball_tracking = []
+    balls_tracked = []
     # loop
     while cvwindows.event_loop():
         # reading a frame
@@ -122,12 +125,34 @@ def waitBalls(reader, PTM):
         balls = capture_balls.get_balls(warped)
         # balls = capture_balls.get_balls(gray)
         if len(balls) > 0:
-            ball_tracking.append(balls)
+            balls_tracked.append(balls)
 
         camera.show(frame)
 
     cvwindows.clear()
-    return ball_tracking
+    return np.array(balls_tracked)
+
+def get_ballFunc(balls_tracked):
+    import matplotlib.pyplot as plt
+    
+    all_balls = np.array([ball[0] for balls in balls_tracked for ball in balls])
+    x, y = all_balls[:, 0], all_balls[:, 1]
+
+    plt.plot(x, y)
+
+    # model, ball_idxs = ransac(balls_tracked, len(balls_tracked), True)
+    model, ball_idxs = ransac(all_balls, len(balls_tracked), True)
+
+    new_x = x[ball_idxs]
+    y2 = map(lambda v: model[0]+model[1]*v+model[2]*v*v, new_x)
+
+    plt.plot(new_x, y2)
+
+    plt.xlim(0, 1024)
+    plt.ylim(0, 600)
+    plt.show()
+
+    return model, ball_idxs
 
 def draw_result(homePlate_cnt, ball_tracking, ball_func):
     user_img = cv2.cvtColor(np.zeros(params.transform_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
