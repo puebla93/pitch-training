@@ -28,8 +28,8 @@ def ransac(data, d, return_all=False):
     best_inlier_idxs = None
 
     while iterations < params.max_iters:
-        maybe_idxs, test_idxs = random_partition(params.n, data.shape[0])
-        # maybe_idxs, test_idxs = random_partition(params.n, data)
+        # maybe_idxs, test_idxs = random_partition(params.n, d)
+        maybe_idxs, test_idxs = random_partition(data)
         maybeinliers = data[maybe_idxs, :]
         test_points = data[test_idxs]
 
@@ -66,32 +66,36 @@ def ransac(data, d, return_all=False):
     else:
         return bestfit
 
-def random_partition(n, n_data):
-# def random_partition(n, data):
+# def random_partition(n, n_data):
+def random_partition(data):
     """return n random rows of data (and also the other len(data)-n rows)"""
 
-    all_idxs = np.arange(n_data)
-    np.random.shuffle(all_idxs)
-    idxs1 = all_idxs[:n]
-    idxs2 = all_idxs[n:]
+    # all_idxs = np.arange(n_data)
+    # np.random.shuffle(all_idxs)
+    # idxs1 = all_idxs[:n]
+    # idxs2 = all_idxs[n:]
 
-    return idxs1, idxs2
+    # return idxs1, idxs2
 
     all_idxs = np.arange(data.shape[0])
     np.random.shuffle(all_idxs)
-    idxs1 = all_idxs[:n]
-    idxs2 = all_idxs[n:]
-    maybeinliers = data[idxs1]
-    test_points = data[idxs2]
+    idxs1 = all_idxs[:params.n]
+    idxs2 = all_idxs[params.n:]
 
-    inliers = []
-    for points in maybeinliers:
+    test_points = []
+    for points in data[idxs2]:
+        test_points += points
+
+    maybeinliers = []
+    for points in data[idxs1]:
         all_idxs = np.arange(points.shape[0])
         np.random.shuffle(all_idxs)
         idxs1 = all_idxs[0]
         idxs2 = all_idxs[1:]
+        maybeinliers += points[idxs1]
+        test_points += points[idxs2]
 
-    return inliers, test_points
+    return np.array(maybeinliers), np.array(test_points)
 
 if __name__ == '__main__':
     pass

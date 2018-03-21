@@ -85,6 +85,11 @@ class HomePlate():
             rolled_pts = pts[roll:] + pts[:roll]
             return rolled_pts
 
+class Ball:
+    def __init__(self, center, radius):
+        self.center = center
+        self.radius = radius
+
 class QuadraticLeastSquaresModel:
     def __init__(self):
         self.func = lambda x, a, b, c : a+b*x+c*x*x

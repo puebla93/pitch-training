@@ -140,8 +140,8 @@ def get_ballFunc(balls_tracked):
 
     plt.plot(x, y)
 
-    # model, ball_idxs = ransac(balls_tracked, len(balls_tracked), True)
-    model, ball_idxs = ransac(all_balls, len(balls_tracked), True)
+    model, ball_idxs = ransac(balls_tracked, balls_tracked.shape[0], True)
+    # model, ball_idxs = ransac(all_balls, balls_tracked.shape[0], True)
 
     new_x = x[ball_idxs]
     y2 = map(lambda v: model[0]+model[1]*v+model[2]*v*v, new_x)
