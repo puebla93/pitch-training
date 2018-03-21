@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import cv2
-from utils import show_contours, draw_ball, draw_balls, Obj, kmeans
+from utils import show_contours, draw_ball, draw_balls, Obj, kmeans, Ball
 
 params = Obj(
     debugging=False,
@@ -70,7 +70,7 @@ def filter_by_radius(frame, contours):
             if params.debugging:
                 print "discarded by radius"
         else:
-            balls.append(np.array([center, radius]))
+            balls.append(Ball(center, radius))
             if params.debugging:
                 print "carded by radius"
 

@@ -124,7 +124,7 @@ def waitBalls(reader, PTM):
         # finding the ball
         balls = capture_balls.get_balls(warped)
         # balls = capture_balls.get_balls(gray)
-        if len(balls) > 0:
+        if balls.shape[0] > 0:
             balls_tracked.append(balls)
 
         camera.show(frame)
@@ -135,7 +135,8 @@ def waitBalls(reader, PTM):
 def get_ballFunc(balls_tracked):
     import matplotlib.pyplot as plt
     
-    all_balls = np.array([ball[0] for balls in balls_tracked for ball in balls])
+    all_balls = np.array([ball for balls in balls_tracked for ball in balls])
+    all_balls = np.array(map(lambda b: b.center, all_balls))
     x, y = all_balls[:, 0], all_balls[:, 1]
 
     plt.plot(x, y)
@@ -159,8 +160,8 @@ def draw_result(homePlate_cnt, ball_tracking, ball_func):
     cv2.drawContours(user_img, [homePlate_cnt.astype('int32')], -1, (255, 255, 255), -1)
 
     for balls in ball_tracking:
-        for center, radius in balls:
-            cv2.circle(user_img, (int(center[0]), int(center[1])), int(radius), (0, 255, 0), -1)
+        for ball in balls:
+            cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), (0, 255, 0), -1)
     
     return user_img
 
