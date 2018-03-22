@@ -2,6 +2,7 @@ import math
 import cv2
 import numpy as np
 import scipy.optimize as optimization
+import matplotlib.pyplot as plt
 
 class Obj(object):
     def __init__(self, **kwarg):
@@ -95,14 +96,16 @@ class QuadraticLeastSquaresModel:
         self.func = lambda x, a, b, c : a+b*x+c*x*x
 
     def fit(self, data):
-        x, y = data[:, 0], data[:, 1]
+        all_centers = np.array(map(lambda b: b.center, data))
+        x, y = all_centers[:, 0], all_centers[:, 1]
         x0 = np.array([0.0, 0.0, 0.0])
         sigma = np.ones(data.shape[0], 'float32')
         values, _ = optimization.curve_fit(self.func, x, y, x0, sigma)
         return values
 
     def get_error(self, data, model):
-        x, y = data[:, 0], data[:, 1]
+        all_centers = np.array(map(lambda b: b.center, data))
+        x, y = all_centers[:, 0], all_centers[:, 1]
         y_fit = self.func(x, model[0], model[1], model[2])
         err_per_point = (y - y_fit)**2 # sum squared error per row
         return err_per_point
@@ -154,6 +157,25 @@ def angle(v1, v2):
     # return the angle in degrees
     return np.degrees(math.acos(inner_product/(len1*len2)))
 
+def homeAVG(homes):
+    home = np.mean(homes, 0)
+    return home
+
+def draw_finalResult(homePlate_cnt, balls, img_resolution, ballFunc):
+    user_img = cv2.cvtColor(np.zeros(img_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
+    cv2.drawContours(user_img, [homePlate_cnt.astype('int32')], -1, (255, 255, 255), -1)
+
+    meanRadius = int(np.mean(map(lambda b: b.radius, balls)))
+    func = lambda x: ballFunc[0] + ballFunc[1]*x + ballFunc[2]*x**2
+    start, stop, step = meanRadius, img_resolution[1], meanRadius*2
+    for i in range(start, stop, step):
+        cv2.circle(user_img, (i, int(func(i))), meanRadius, (0, 255, 0), -1)
+    # for ball in balls:
+        # cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), (0, 255, 0), -1)
+        # cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), meanRadius, (0, 255, 0), -1)
+    
+    return user_img
+
 def kmeans(frame, K):
     Z = frame.reshape((-1, 3))
 
@@ -170,3 +192,18 @@ def kmeans(frame, K):
     result_frame = tmp.reshape((frame.shape))
 
     return result_frame
+
+def plot_fit(balls_tracked, n_balls):    
+    all_balls = np.array([ball for balls in balls_tracked for ball in balls])
+    all_balls = np.array(map(lambda b: b.center, all_balls))
+    x, y = all_balls[:, 0], all_balls[:, 1]
+
+    all_balls = np.array(map(lambda b: b.center, n_balls))
+    n_x, n_y = all_balls[:, 0], all_balls[:, 1]
+
+    plt.plot(x, y, '-o')
+    plt.plot(n_x, n_y, '-o')
+
+    plt.xlim(0, 1024)
+    plt.ylim(0, 600)
+    plt.show()

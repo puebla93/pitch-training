@@ -6,7 +6,8 @@ import transform
 import capture_balls
 from cvinput import cvwindows
 from parse_args import args
-from utils import Reader, Obj, show_contours, HomePlate, kmeans
+from utils import Reader, Obj, HomePlate
+from utils import show_contours, homeAVG, kmeans, draw_finalResult, plot_fit
 from filtering import filter_img
 from ransac import ransac
 
@@ -41,10 +42,10 @@ def main():
 
     balls_tracked = waitBalls(reader, PTM)
 
-    model, ball_idxs = get_ballFunc(balls_tracked)
+    balls, model = fit_balls(balls_tracked)
 
     # draw final result
-    user_img = draw_result(new_homePlate_cnt, balls_tracked, None)
+    user_img = draw_finalResult(new_homePlate_cnt, balls, params.transform_resolution, model)
     cv2.imshow('RESULT', user_img)
     cv2.waitKey(0)
 
@@ -132,42 +133,12 @@ def waitBalls(reader, PTM):
     cvwindows.clear()
     return np.array(balls_tracked)
 
-def get_ballFunc(balls_tracked):
-    import matplotlib.pyplot as plt
+def fit_balls(balls_tracked):
+    balls, model = ransac(balls_tracked)
     
-    all_balls = np.array([ball for balls in balls_tracked for ball in balls])
-    all_balls = np.array(map(lambda b: b.center, all_balls))
-    x, y = all_balls[:, 0], all_balls[:, 1]
-
-    plt.plot(x, y)
-
-    model, ball_idxs = ransac(balls_tracked, balls_tracked.shape[0], True)
-    # model, ball_idxs = ransac(all_balls, balls_tracked.shape[0], True)
-
-    new_x = x[ball_idxs]
-    y2 = map(lambda v: model[0]+model[1]*v+model[2]*v*v, new_x)
-
-    plt.plot(new_x, y2)
-
-    plt.xlim(0, 1024)
-    plt.ylim(0, 600)
-    plt.show()
-
-    return model, ball_idxs
-
-def draw_result(homePlate_cnt, ball_tracking, ball_func):
-    user_img = cv2.cvtColor(np.zeros(params.transform_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
-    cv2.drawContours(user_img, [homePlate_cnt.astype('int32')], -1, (255, 255, 255), -1)
-
-    for balls in ball_tracking:
-        for ball in balls:
-            cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), (0, 255, 0), -1)
+    # plot_fit(balls_tracked, balls)
     
-    return user_img
-
-def homeAVG(homes):
-    home = np.mean(homes, 0)
-    return home
+    return balls, model
 
 def setUp_Reader(reader):
     folder_path = os.listdir("videos")

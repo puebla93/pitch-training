@@ -1,7 +1,8 @@
 import os
 import cv2
 import numpy as np
-from utils import show_contours, draw_home_lines, Obj, refining_corners, angle, get_dist
+from utils import Obj
+from utils import show_contours, draw_home_lines, refining_corners, angle, get_dist
 
 params = Obj(
     debugging=False,

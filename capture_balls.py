@@ -1,7 +1,8 @@
 import os
 import numpy as np
 import cv2
-from utils import show_contours, draw_ball, draw_balls, Obj, kmeans, Ball
+from utils import Obj, Ball
+from utils import show_contours, draw_ball, draw_balls, kmeans
 
 params = Obj(
     debugging=False,
