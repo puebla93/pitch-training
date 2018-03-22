@@ -38,14 +38,16 @@ def main():
 
     home = calibrateHome(reader)
 
-    PTM, new_homePlate_cnt = computeTransform(reader, home)
+    PTM, new_homePlate = computeTransform(reader, home)
 
     balls_tracked = waitBalls(reader, PTM)
 
     balls, model = fit_balls(balls_tracked)
 
+    wasStrike = was_strike(new_homePlate, model)
+
     # draw final result
-    user_img = draw_finalResult(new_homePlate_cnt, balls, params.transform_resolution, model)
+    user_img = draw_finalResult(new_homePlate, balls, params.transform_resolution, model, wasStrike)
     cv2.imshow('RESULT', user_img)
     cv2.waitKey(0)
 
@@ -139,6 +141,15 @@ def fit_balls(balls_tracked):
     # plot_fit(balls_tracked, balls)
     
     return balls, model
+
+def was_strike(homePlate, ballFunc):
+    func = lambda x: ballFunc[0] + ballFunc[1]*x + ballFunc[2]*x**2    
+    start, stop = int(homePlate[2, 0]), (int(homePlate[1, 0]) + 1)
+    range1, range2 = homePlate[3, 1], homePlate[2, 1]
+    for x in range(start, stop):
+        if func(x) >= range1 and func(x) <= range2:
+            return True
+    return False
 
 def setUp_Reader(reader):
     folder_path = os.listdir("videos")

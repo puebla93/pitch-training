@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
-from utils import Obj, show_contours
+from utils import Obj, HomePlate
+from utils import show_contours
 
 params = Obj(
     debugging=False,
@@ -8,20 +9,6 @@ params = Obj(
     size_homePercenct=1./6,
     use_rectApprox = False
 )
-
-def get_home_square(home):
-    pt1 = home.ordered_pts[2] + (home.ordered_pts[1] - home.ordered_pts[2]) * 2
-    pt2 = home.ordered_pts[2]
-    pt3 = home.ordered_pts[3]
-    pt4 = home.ordered_pts[3] + (home.ordered_pts[4] - home.ordered_pts[3]) * 2
-    square = np.array([pt1, pt2, pt3, pt4])
-
-    rect = cv2.minAreaRect(square.reshape((4, 1, 2)))
-    box = np.array(cv2.cv.BoxPoints(rect), dtype="float32")
-
-    if params.use_rectApprox:
-        return box
-    return square
 
 def homePlate_transform(frame, home):
 	# obtain a square in a consistent points order
@@ -62,6 +49,20 @@ def homePlate_transform(frame, home):
     
 	# return the perspective transform matrix
     return PTM, homePlate_cnt
+
+def get_home_square(home):
+    pt1 = home.ordered_pts[2] + (home.ordered_pts[1] - home.ordered_pts[2]) * 2
+    pt2 = home.ordered_pts[2]
+    pt3 = home.ordered_pts[3]
+    pt4 = home.ordered_pts[3] + (home.ordered_pts[4] - home.ordered_pts[3]) * 2
+    square = np.array([pt1, pt2, pt3, pt4])
+
+    rect = cv2.minAreaRect(square.reshape((4, 1, 2)))
+    box = np.array(cv2.cv.BoxPoints(rect), dtype="float32")
+
+    if params.use_rectApprox:
+        return box
+    return square
 
 def setUp(nparams):
     params.setattr(nparams)

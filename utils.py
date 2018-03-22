@@ -161,19 +161,28 @@ def homeAVG(homes):
     home = np.mean(homes, 0)
     return home
 
-def draw_finalResult(homePlate_cnt, balls, img_resolution, ballFunc):
+def draw_finalResult(homePlate_cnt, balls, img_resolution, ballFunc, wasStrike):
     user_img = cv2.cvtColor(np.zeros(img_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
     cv2.drawContours(user_img, [homePlate_cnt.astype('int32')], -1, (255, 255, 255), -1)
+
+    if wasStrike:
+        ballColor = (0, 255, 0)
+        pitch = 'STRIKE'
+    else:
+        ballColor = (0, 0, 255)
+        pitch = 'BALL'
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(user_img, pitch, (10,50), font, 2, ballColor, 2)
 
     meanRadius = int(np.mean(map(lambda b: b.radius, balls)))
     func = lambda x: ballFunc[0] + ballFunc[1]*x + ballFunc[2]*x**2
     start, stop, step = meanRadius, img_resolution[1], meanRadius*2
     for i in range(start, stop, step):
-        cv2.circle(user_img, (i, int(func(i))), meanRadius, (0, 255, 0), -1)
+        cv2.circle(user_img, (i, int(func(i))), meanRadius, ballColor, -1)
     # for ball in balls:
         # cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), (0, 255, 0), -1)
         # cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), meanRadius, (0, 255, 0), -1)
-    
+
     return user_img
 
 def kmeans(frame, K):
