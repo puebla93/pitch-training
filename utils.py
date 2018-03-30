@@ -202,7 +202,7 @@ def kmeans(frame, K):
 
     return result_frame
 
-def plot_fit(balls_tracked, n_balls):    
+def plot_fit(balls_tracked, n_balls):
     all_balls = np.array([ball for balls in balls_tracked for ball in balls])
     all_balls = np.array(map(lambda b: b.center, all_balls))
     x, y = all_balls[:, 0], all_balls[:, 1]

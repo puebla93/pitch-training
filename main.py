@@ -9,7 +9,7 @@ from parse_args import args
 from utils import Reader, Obj, HomePlate
 from utils import show_contours, homeAVG, kmeans, draw_finalResult, plot_fit
 from filtering import filter_img
-from ransac import ransac
+import ransac
 
 params = Obj(
     useKmeans=False,
@@ -35,6 +35,7 @@ def main():
     detect_homes.setUp({"debugging":args.debugging})
     transform.setUp({"debugging":args.debugging})
     capture_balls.setUp({"debugging":args.debugging})
+    ransac.setUp({"debugging":args.debugging})
 
     home = calibrateHome(reader)
 
@@ -101,8 +102,6 @@ def computeTransform(reader, home):
     return PTM, new_homePlate_cnt
 
 def waitBalls(reader, PTM):
-    camera = cvwindows.create('camera')
-    
     balls_tracked = []
     # loop
     while cvwindows.event_loop():
@@ -126,17 +125,18 @@ def waitBalls(reader, PTM):
 
         # finding the ball
         balls = capture_balls.get_balls(warped)
-        # balls = capture_balls.get_balls(gray)
         if balls.shape[0] > 0:
             balls_tracked.append(balls)
 
-        camera.show(frame)
+        cv2.imshow('camera', frame)
+        cv2.waitKey(1)
 
-    cvwindows.clear()
+    cv2.destroyWindow('camera')
     return np.array(balls_tracked)
 
 def fit_balls(balls_tracked):
-    balls, model = ransac(balls_tracked)
+    all_balls = np.array([ball for balls in balls_tracked for ball in balls])
+    balls, model = ransac.ransac(all_balls)
     
     # plot_fit(balls_tracked, balls)
     

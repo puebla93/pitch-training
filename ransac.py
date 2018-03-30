@@ -1,17 +1,20 @@
 import numpy as np
 import scipy
 from utils import Obj, QuadraticLeastSquaresModel, Ball
+import matplotlib.pyplot as plt
 
 params = Obj(
     debugging=False,
     # a model that can be fitted to data points
     model=QuadraticLeastSquaresModel(),
     # the minimum number of data values required to fit the model
-    n=4,
+    n=3,
     # the maximum number of iterations allowed in the algorithm
-    max_iters=1000,
+    max_iters=30,
     # a threshold value for determining when a data point fits a model
-    eps=1e4
+    eps=1e3,
+    # a percent of close data values required to assert that a model fits well to data
+    closeData_percent=9./10
 )
 
 def ransac(data):
@@ -21,28 +24,28 @@ def ransac(data):
     Return:
         bestdata - best fit data by the model(or nil if no good model is found)"""
 
-    # d - the number of close data values required to assert that a model fits well to data
-    d = data.shape[0] - params.n
+    # num_closeData - the number of close data values required to assert that a model fits well to data
+    num_closeData = data.shape[0] * params.closeData_percent - params.n
+    # num_closeData = data.shape[0] - params.n
     iterations = 0
     bestfit = None
     besterr = np.inf
-    bestdata = None
+    best_inlier_idxs = None
 
     while iterations < params.max_iters:
-        maybeinliers, test_points = random_partition(data)
+        maybe_idxs, test_idxs = random_partition(data.shape[0])
+        maybeinliers = data[maybe_idxs]
+        test_points = data[test_idxs]
 
         maybemodel = params.model.fit(maybeinliers)
         test_err = params.model.get_error(test_points, maybemodel)
-
-        alsoinliers = test_points[test_err < params.eps]
+        also_idxs = test_idxs[test_err < params.eps] # select indices of rows with accepted points
+        alsoinliers = data[also_idxs]
 
         if params.debugging:
-            print 'test_err.min()', test_err.min()
-            print 'test_err.max()', test_err.max()
-            print 'np.mean(test_err)', np.mean(test_err)
-            print 'iteration %d : len(alsoinliers) = %d'%(iterations, len(alsoinliers))
+            plot_debug(data, maybe_idxs, also_idxs, maybemodel)
         
-        if len(alsoinliers) >= d:
+        if len(alsoinliers) >= num_closeData:
             betterdata = np.concatenate((maybeinliers, alsoinliers))
             bettermodel = params.model.fit(betterdata)
             better_errs = params.model.get_error(betterdata, bettermodel)
@@ -51,48 +54,68 @@ def ransac(data):
             if thiserr < besterr:
                 bestfit = bettermodel
                 besterr = thiserr
-                bestdata = betterdata
+                best_inlier_idxs = np.concatenate((maybe_idxs, also_idxs))
 
         iterations+=1
 
     if bestfit is None:
         raise ValueError("did not meet fit acceptance criteria")
     else:
+        bestdata = data[best_inlier_idxs]
         bestdata = list(bestdata)
         bestdata.sort(key=lambda p: p.center[0])
-        bestdata = fitted_balls(bestdata, bestfit)
+        bestdata = fit_balls(bestdata, bestfit)
         return bestdata, bestfit
 
-def random_partition(data):
-    """return params.n random points of data (and also the other len(data)-n poimts)"""
-    all_idxs = np.arange(data.shape[0])
-    np.random.shuffle(all_idxs)
+def random_partition(n_data):
+    """return n random rows of data (and also the other len(data)-n rows)"""
+    all_idxs = np.random.permutation(n_data)
     idxs1 = all_idxs[:params.n]
     idxs2 = all_idxs[params.n:]
+    return idxs1, idxs2
 
-    test_points = []
-    for points in data[idxs2]:
-        test_points = np.concatenate((test_points, points))
-
-    maybeinliers = []
-    for points in data[idxs1]:
-        all_idxs = np.arange(points.shape[0])
-        np.random.shuffle(all_idxs)
-        idxs1 = all_idxs[:1]
-        idxs2 = all_idxs[1:]
-        maybeinliers = np.concatenate((maybeinliers, points[idxs1]))
-        test_points = np.concatenate((test_points, points[idxs2]))
-
-    maybeinliers = list(maybeinliers)
-    maybeinliers.sort(key=lambda p: p.center[0])
-    return np.array(maybeinliers), test_points
-
-def fitted_balls(balls, fit):
+def fit_balls(balls, fit):
     func = params.model.func
-    new_balls = map(lambda b: Ball(np.array([b.center[0],
-                                    func(b.center[0], fit[0], fit[1], fit[2])]),
-                                    b.radius), balls)
+    new_balls = map(lambda ball: Ball(np.array([ball.center[0],
+                                    func(ball.center[0], fit[0], fit[1], fit[2])]),
+                                    ball.radius), balls)
     return np.array(new_balls)
+
+def plot_debug(data, maybe_idxs, also_idxs, maybemodel):
+    # print 'test_err.min()', test_err.min()
+    # print 'test_err.max()', test_err.max()
+    # print 'np.mean(test_err)', np.mean(test_err)
+    # print 'iteration %d : len(alsoinliers) = %d'%(iterations, len(alsoinliers))
+    # print
+
+    all_balls = np.array(map(lambda b: b.center, data))
+    x, y = all_balls[:, 0], all_balls[:, 1]
+
+    maybeinliers_balls = np.array(map(lambda b: b.center, data[maybe_idxs]))
+    maybeinliers_x, maybeinliers_y = maybeinliers_balls[:, 0], maybeinliers_balls[:, 1]
+
+    alsoinliers_balls = np.array(map(lambda b: b.center, data[also_idxs]))
+    alsoinliers_x, alsoinliers_y = alsoinliers_balls[:, 0], alsoinliers_balls[:, 1]
+
+    func_x = np.arange(0, 1024, dtype='int')
+    # func_x = np.arange(x.min()-10, x.max()+10, dtype='int')
+    func_y = map(lambda x : params.model.func(x, maybemodel[0], maybemodel[1], maybemodel[2]), func_x)
+    func_y = np.array(func_y)
+
+    plt.scatter(x, y, c='w', edgecolors='r', label='data')
+    plt.scatter(alsoinliers_x, alsoinliers_y, edgecolors='b', label='alsoinliers')
+    plt.scatter(maybeinliers_x, maybeinliers_y, c='g', edgecolors='g', label='maybeinliers')
+    plt.plot(func_x, func_y, 'm', lw=2, label='maybemodel')
+
+    plt.xlim(0, 1024)
+    plt.ylim(0, 600)
+    # plt.xlim(x.min()-10, x.max()+10)
+    # plt.ylim(y.min()-10, y.max()+10)
+    plt.legend()
+    plt.show()
+
+def setUp(nparams):
+    params.setattr(nparams)
 
 if __name__ == '__main__':
     pass
