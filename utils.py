@@ -1,3 +1,4 @@
+import os
 import math
 import cv2
 import numpy as np
@@ -31,8 +32,10 @@ class Reader():
         self._frameNumber += 1
         if self.params.read_from == "camera":
             self.actualFrame = self.capture.read()[1]
-        if self.params.read_from == "folder":
-            path = self.params.folder_path + str(self._frameNumber) + self.params.frame_type
+        elif len(self.params.frameNames) <= self._frameNumber:
+            return None
+        elif self.params.read_from == "folder":
+            path = self.params.folder_path + self.params.frameNames[self._frameNumber]
             self.actualFrame = cv2.imread(path)
         return self.actualFrame
 
@@ -49,22 +52,28 @@ class Reader():
         if nparams.has_key("read_from") and nparams["read_from"] == "camera" and self.capture is None:
             self.capture = cv2.VideoCapture(self.params.camera_index)
 
-    def get_frameNumber(self):
-        return self._frameNumber
+    def get_frameName(self):
+        if len(self.params.frameNames) > self._frameNumber:
+            return self.params.frameNames[self._frameNumber]
+        else:
+            return "-1"
 
     def __setDefaults__(self):
+        listOfFrames = os.listdir("videos/Tue Jul  4 13:26:23 2017/")
+        listOfFrames.sort(key=lambda frameName: int(frameName[:-4]))
         self.params = Obj(
             read_from="folder",
             folder_path="videos/Tue Jul  4 13:26:23 2017/",
-            frame_type=".png",
+            frameNames=listOfFrames,
             camera_index=0
             )
 
 class HomePlate():
     def __init__(self, cnt):
-        self.contour = cnt
-        pts = [pt[0] for pt in self.contour]
+        # self.contour = cnt
+        pts = [pt[0] for pt in cnt]
         self.ordered_pts = self.__find_order__(pts)
+        self.contour = self.ordered_pts.reshape((5,1,2))
 
     def __find_order__(self, pts):
         angles = []
@@ -78,12 +87,12 @@ class HomePlate():
         indexes.sort(key=(lambda i: angles[i]), reverse=True)
 
         if indexes[0] + indexes[1] == 5:
-            return pts
+            return np.array(pts)
         elif indexes[0] + indexes[1] == 3:
-            return pts[4:] + pts[:4]
+            return np.array(pts[4:] + pts[:4])
         else:
             roll = (indexes[0] + indexes[1])/2
-            rolled_pts = pts[roll:] + pts[:roll]
+            rolled_pts = np.array(pts[roll:] + pts[:roll])
             return rolled_pts
 
 class Ball:
@@ -158,8 +167,9 @@ def angle(v1, v2):
     return np.degrees(math.acos(inner_product/(len1*len2)))
 
 def homeAVG(homes):
-    home = np.mean(homes, 0)
-    return home
+    contours = map(lambda home: home.contour, homes)
+    contour = np.mean(contours, 0)
+    return HomePlate(contour)
 
 def draw_finalResult(homePlate_cnt, balls, img_resolution, ballFunc, wasStrike):
     user_img = cv2.cvtColor(np.zeros(img_resolution, 'float32'), cv2.COLOR_GRAY2BGR)

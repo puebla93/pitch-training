@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-from utils import Obj
+from utils import Obj, HomePlate
 from utils import show_contours, draw_home_lines, refining_corners, angle, get_dist
 
 params = Obj(
@@ -39,6 +39,7 @@ def get_homes(frame):
         cv2.waitKey(0)
         cv2.destroyWindow('homes')
 
+    homes = map(lambda home: HomePlate(home), homes)
     return homes
 
 def filter_by(frame, filters, contours):
