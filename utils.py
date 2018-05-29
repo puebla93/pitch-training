@@ -117,13 +117,13 @@ def show_contours(cnt, frame, window_name):
 
 def draw_ball(ball, frame, window_name):
     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-    cv2.circle(preview, (int(ball[0][0]), int(ball[0][1])), int(ball[1]), (0, 255, 0), 1)
+    cv2.circle(preview, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), (0, 255, 0), 1)
     cv2.imshow(window_name, preview)
 
 def draw_balls(balls, frame, window_name):
     preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
     for ball in balls:
-        cv2.circle(preview, (int(ball[0][0]), int(ball[0][1])), int(ball[1]), (0, 255, 0), 1)
+        cv2.circle(preview, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), (0, 255, 0), 1)
     cv2.imshow(window_name, preview)
 
 def draw_home_lines(lines, frame, window_name):

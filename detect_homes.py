@@ -23,7 +23,7 @@ def get_homes(frame):
         cv2.imshow('Thresh', thresh)
 
     contours_img = thresh.copy()
-    contours, hierarchy = cv2.findContours(contours_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(contours_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     if params.debugging:
         show_contours(contours, frame, 'all contours')
