@@ -12,12 +12,6 @@ from filtering import filter_img
 import ransac
 import get_results
 
-############################################################################################
-############################################################################################
-# frameX = {}
-############################################################################################
-############################################################################################
-
 params = Obj(
     useKmeans=False,
     kmeans_k=6,
@@ -39,8 +33,8 @@ def main():
     setUp_Reader(reader)
 
     # setting up transform, detect_homes and capture_balls params
-    # detect_homes.setUp({"debugging":args.debugging})
-    # transform.setUp({"debugging":args.debugging})
+    detect_homes.setUp({"debugging":args.debugging})
+    transform.setUp({"debugging":args.debugging})
     capture_balls.setUp({"debugging":args.debugging})
     ransac.setUp({"debugging":args.debugging})
 
@@ -136,20 +130,17 @@ def waitBalls(reader, PTM):
         if balls.shape[0] > 0:
             balls_tracked.append(balls)
 
-            #######################################################################
-            #######################################################################
-            # warped1 = cv2.warpPerspective(frame, PTM, transform.params.transform_resolution)
-            # get_results.saveBallPosition(warped1, reader.get_frameName())
-            # frameX[reader.get_frameName()] = balls[0].center[0]
-            folder_path = os.listdir("pelota")
-            folder_path.sort()
-            folder_name = folder_path[args.test_folder]
-            file_path = 'data_set/PSEye/results/' + folder_name + ".json"
-            data = get_results.load(file_path)
-            data[reader.get_frameName()] = [list(balls[0].center), balls[0].radius]
-            get_results.save(data, file_path)            
-            #######################################################################
-            #######################################################################
+            if args.save_as_test:
+                warped1 = cv2.warpPerspective(frame, PTM, transform.params.transform_resolution)
+                get_results.saveBallPosition(warped1, reader.get_frameName())
+
+                folder_path = os.listdir("pelota")
+                folder_path.sort()
+                folder_name = folder_path[args.test_folder]
+                file_path = 'data_set/PSEye/results/' + folder_name + ".json"
+                data = get_results.load(file_path)
+                data[reader.get_frameName()] = [list(balls[0].center), balls[0].radius]
+                get_results.save(data, file_path)            
 
         cv2.imshow('camera', frame)
         cv2.waitKey(1)
@@ -161,8 +152,6 @@ def fit_balls(balls_tracked):
     all_balls = np.array([ball for balls in balls_tracked for ball in balls])
     balls, model = ransac.ransac(all_balls)
     
-    # save_results(balls)
-
     # plot_fit(balls_tracked, balls)
     
     return balls, model
@@ -190,25 +179,6 @@ def setUp_Reader(reader):
 
 def setUp(nparams):
     params.setattr(nparams)
-
-def save_results(balls):
-    folder_path = os.listdir("pelota/full_HD(60fps)")
-    folder_path.sort()
-    folder_name = folder_path[args.test_folder]
-    test = 'fullHD/'
-    data = {}
-    keys = frameX.keys()
-    for i in range(len(keys)):
-        X = frameX[keys[i]]
-        ball = None
-        for b in balls:
-            if X == b.center[0]:
-                ball = [list(b.center), b.radius]
-                break
-        data[keys[i]] = ball
-    # print data
-    file_path = 'data_set/' + test + "results/" + folder_name + ".json"
-    get_results.save(data, file_path)
 
 if __name__ == "__main__":
     main()

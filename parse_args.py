@@ -6,6 +6,7 @@ def parse_args():
     parser.add_argument('-d', "--debug", dest="debugging", type=bool, default=False, help='Print all windows. This option is for debugging')
     parser.add_argument('-tf', "--test-folder", dest="test_folder", type=int, default=0, help='Select a test folder from video folder')
     parser.add_argument('-ti', "--test-frame", dest="test_frame", type=int, default=0, help='Select a test frame from test folder')
+    parser.add_argument('-sat', "--save-as-test", dest="save_as_test", type=bool, default=False, help='Save the pitch as test')
 
     return parser.parse_args()
 
