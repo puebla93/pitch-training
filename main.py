@@ -6,7 +6,7 @@ import transform
 import capture_balls
 from cvinput import cvwindows
 from parse_args import args
-from utils import Reader, Obj, HomePlate
+from utils import Reader, Obj, HomePlate, Ball
 from utils import show_contours, homeAVG, kmeans, draw_finalResult, plot_fit
 from filtering import filter_img
 import ransac
@@ -42,6 +42,7 @@ def main():
 
     PTM, new_homePlate = computeTransform(reader, home)
 
+    capture_balls.setUp({"home_begin":new_homePlate[2,0]})
     balls_tracked = waitBalls(reader, PTM)
 
     balls, model = fit_balls(balls_tracked)
@@ -65,14 +66,16 @@ def calibrateHome(reader):
             break
 
         # removing noise from image
-        gray = filter_img(frame)
+        blur = filter_img(frame)
 
         # using kmeans on the image
         if params.useKmeans:
-            gray = kmeans(frame, params.kmeans_k)
+            blur = kmeans(blur, params.kmeans_k)
             if args.debugging:
-                cv2.imshow('kmeans', gray)
+                cv2.imshow('kmeans', blur)
                 cv2.waitKey(0)
+
+        gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)        
 
         # finding a list of homes
         homes = detect_homes.get_homes(gray)
@@ -150,14 +153,18 @@ def waitBalls(reader, PTM):
 
 def fit_balls(balls_tracked):
     all_balls = np.array([ball for balls in balls_tracked for ball in balls])
-    balls, model = ransac.ransac(all_balls)
-    
-    # plot_fit(balls_tracked, balls)
+    points = map(lambda ball: np.array([ball.center[0], ball.center[1], ball.radius]), all_balls)
+    points = np.array(points)
+    new_points, model = ransac.ransac(points)
+    balls = map(lambda point: Ball(np.array(point[:2]), point[2]), new_points)
+
+    if args.debugging:
+        plot_fit(all_balls, balls)
     
     return balls, model
 
 def was_strike(homePlate, ballFunc):
-    func = lambda x: ballFunc[0] + ballFunc[1]*x + ballFunc[2]*x**2    
+    func = lambda x: ballFunc[0] + ballFunc[1]*x + ballFunc[2]*x**2
     start, stop = int(homePlate[2, 0]), (int(homePlate[1, 0]) + 1)
     range1, range2 = homePlate[3, 1], homePlate[2, 1]
     for x in range(start, stop):
@@ -166,9 +173,9 @@ def was_strike(homePlate, ballFunc):
     return False
 
 def setUp_Reader(reader):
-    folder_path = os.listdir("videos")
+    folder_path = os.listdir("pelota")
     folder_path.sort()
-    path = 'videos/' + folder_path[args.test_folder] + '/'
+    path = 'pelota/' + folder_path[args.test_folder] + '/'
     framesNames = os.listdir(path)
     framesNames.sort(key=lambda frameName: int(frameName[:-4]))
     reader._frameNumber = args.test_frame - 1

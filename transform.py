@@ -57,10 +57,9 @@ def get_home_square(home):
     pt4 = home.ordered_pts[3] + (home.ordered_pts[4] - home.ordered_pts[3]) * 2
     square = np.array([pt1, pt2, pt3, pt4])
 
-    rect = cv2.minAreaRect(square.reshape((4, 1, 2)))
-    box = np.array(cv2.cv.BoxPoints(rect), dtype="float32")
-
     if params.use_rectApprox:
+        rect = cv2.minAreaRect(square.reshape((4, 1, 2)))
+        box = np.array(cv2.cv.BoxPoints(rect), dtype="float32")
         return box
     return square
 

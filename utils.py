@@ -105,38 +105,59 @@ class QuadraticLeastSquaresModel:
         self.func = lambda x, a, b, c : a+b*x+c*x*x
 
     def fit(self, data):
-        all_centers = np.array(map(lambda b: b.center, data))
-        x, y = all_centers[:, 0], all_centers[:, 1]
+        x, y = data[:, 0], data[:, 1]
+        # x, y, z = data[:, 0], data[:, 1], data[:, 2]
         x0 = np.array([0.0, 0.0, 0.0])
         sigma = np.ones(data.shape[0], 'float32')
         values, _ = optimization.curve_fit(self.func, x, y, x0, sigma)
         return values
 
+        # A = np.array([(19,20,24), (10,40,28), (10,50,31)])
+
+        # def func(data, a, b):
+        #     return data[:,0]*data[:,1]*a + b
+
+        # guess = (1,1)
+        # params, pcov = optimize.curve_fit(func, A[:,:2], A[:,2], guess)
+        # print(params)
+        # # [ 0.04919355  6.67741935]
+
     def get_error(self, data, model):
-        all_centers = np.array(map(lambda b: b.center, data))
-        x, y = all_centers[:, 0], all_centers[:, 1]
+        x, y = data[:, 0], data[:, 1]
         y_fit = self.func(x, model[0], model[1], model[2])
         err_per_point = (y - y_fit)**2 # sum squared error per row
         return err_per_point
 
 def show_contours(cnt, frame, window_name):
-    preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+    if len(frame.shape) == 2:
+        preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+    elif len(frame.shape) == 3:
+        preview = frame.copy()
     cv2.drawContours(preview, cnt, -1, (0, 0, 255), 1)
     cv2.imshow(window_name, preview)
 
 def draw_ball(ball, frame, window_name):
-    preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+    if len(frame.shape) == 2:
+        preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+    elif len(frame.shape) == 3:
+        preview = frame.copy()
     cv2.circle(preview, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), (0, 255, 0), 1)
     cv2.imshow(window_name, preview)
 
 def draw_balls(balls, frame, window_name):
-    preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+    if len(frame.shape) == 2:
+        preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+    elif len(frame.shape) == 3:
+        preview = frame.copy()
     for ball in balls:
         cv2.circle(preview, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), (0, 255, 0), 1)
     cv2.imshow(window_name, preview)
 
 def draw_home_lines(lines, frame, window_name):
-    preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+    if len(frame.shape) == 2:
+        preview = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+    elif len(frame.shape) == 3:
+        preview = frame.copy()
     cv2.line(preview, (lines[0][0][0], lines[0][0][1]), (lines[0][1][0], lines[0][1][1]), (255, 0, 0), 1)
     cv2.line(preview, (lines[1][0][0], lines[1][0][1]), (lines[1][1][0], lines[1][1][1]), (255, 0, 0), 1)
     cv2.line(preview, (lines[2][0][0], lines[2][0][1]), (lines[2][1][0], lines[2][1][1]), (0, 255, 0), 1)
@@ -175,12 +196,7 @@ def draw_finalResult(homePlate_cnt, balls, img_resolution, ballFunc, wasStrike):
     user_img = cv2.cvtColor(np.zeros(img_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
     cv2.drawContours(user_img, [homePlate_cnt.astype('int32')], -1, (255, 255, 255), -1)
 
-    if wasStrike:
-        ballColor = (0, 255, 0)
-        pitch = 'STRIKE'
-    else:
-        ballColor = (0, 0, 255)
-        pitch = 'BALL'
+    ballColor, pitch = ((0, 255, 0), 'STRIKE') if wasStrike else ((0, 0, 255), 'BALL')
     font = cv2.FONT_HERSHEY_SIMPLEX
     cv2.putText(user_img, pitch, (10,50), font, 2, ballColor, 2)
 
@@ -189,6 +205,7 @@ def draw_finalResult(homePlate_cnt, balls, img_resolution, ballFunc, wasStrike):
     start, stop, step = meanRadius, img_resolution[1], meanRadius*2
     for i in range(start, stop, step):
         cv2.circle(user_img, (i, int(func(i))), meanRadius, ballColor, -1)
+
     # for ball in balls:
         # cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), (0, 255, 0), -1)
         # cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), meanRadius, (0, 255, 0), -1)
@@ -212,13 +229,12 @@ def kmeans(frame, K):
 
     return result_frame
 
-def plot_fit(balls_tracked, n_balls):
-    all_balls = np.array([ball for balls in balls_tracked for ball in balls])
+def plot_fit(all_balls, n_balls):
     all_balls = np.array(map(lambda b: b.center, all_balls))
     x, y = all_balls[:, 0], all_balls[:, 1]
 
     all_balls = np.array(map(lambda b: b.center, n_balls))
-    n_x, n_y = all_balls[:, 0], all_balls[:, 1]
+    n_x, n_y = n_balls[:, 0], n_balls[:, 1]
 
     plt.plot(x, y, '-o')
     plt.plot(n_x, n_y, '-o')

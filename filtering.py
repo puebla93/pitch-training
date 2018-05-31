@@ -8,8 +8,7 @@ params = Obj(
 )
 
 def filter_img(frame):
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    blur = gray
+    blur = frame.copy()
     for _ in range(params.iter_number):
         blur = params.blur_algorithm(blur, params.win_size)
     return blur

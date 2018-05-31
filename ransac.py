@@ -63,8 +63,8 @@ def ransac(data):
     else:
         bestdata = data[best_inlier_idxs]
         bestdata = list(bestdata)
-        bestdata.sort(key=lambda p: p.center[0])
-        bestdata = fit_balls(bestdata, bestfit)
+        bestdata.sort(key=lambda p: p[0])
+        bestdata = fit_points(bestdata, bestfit)
         return bestdata, bestfit
 
 def random_partition(n_data):
@@ -74,12 +74,10 @@ def random_partition(n_data):
     idxs2 = all_idxs[params.n:]
     return idxs1, idxs2
 
-def fit_balls(balls, fit):
+def fit_points(points, fit):
     func = params.model.func
-    new_balls = map(lambda ball: Ball(np.array([ball.center[0],
-                                    func(ball.center[0], fit[0], fit[1], fit[2])]),
-                                    ball.radius), balls)
-    return np.array(new_balls)
+    new_points = map(lambda point: [point[0], func(point[0], fit[0], fit[1], fit[2]), point[2]], points)
+    return np.array(new_points)
 
 def plot_debug(data, maybe_idxs, also_idxs, maybemodel):
     # print 'test_err.min()', test_err.min()
@@ -88,14 +86,13 @@ def plot_debug(data, maybe_idxs, also_idxs, maybemodel):
     # print 'iteration %d : len(alsoinliers) = %d'%(iterations, len(alsoinliers))
     # print
 
-    all_balls = np.array(map(lambda b: b.center, data))
-    x, y = all_balls[:, 0], all_balls[:, 1]
+    x, y = data[:, 0], data[:, 1]
 
-    maybeinliers_balls = np.array(map(lambda b: b.center, data[maybe_idxs]))
-    maybeinliers_x, maybeinliers_y = maybeinliers_balls[:, 0], maybeinliers_balls[:, 1]
+    maybeinliers_points = data[maybe_idxs]
+    maybeinliers_x, maybeinliers_y = maybeinliers_points[:, 0], maybeinliers_points[:, 1]
 
-    alsoinliers_balls = np.array(map(lambda b: b.center, data[also_idxs]))
-    alsoinliers_x, alsoinliers_y = alsoinliers_balls[:, 0], alsoinliers_balls[:, 1]
+    alsoinliers_points = data[also_idxs]
+    alsoinliers_x, alsoinliers_y = alsoinliers_points[:, 0], alsoinliers_points[:, 1]
 
     func_x = np.arange(0, 1024, dtype='int')
     # func_x = np.arange(x.min()-10, x.max()+10, dtype='int')
