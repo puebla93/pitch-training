@@ -76,7 +76,8 @@ def random_partition(n_data):
 
 def fit_points(points, fit):
     func = params.model.func
-    new_points = map(lambda point: [point[0], func(point[0], fit[0], fit[1], fit[2]), point[2]], points)
+    Yfit, Zfit = fit
+    new_points = map(lambda point: [point[0], func(point[0], Yfit[0], Yfit[1], Yfit[2]), func(point[0], Zfit[0], Zfit[1], Zfit[2])], points)
     return np.array(new_points)
 
 def plot_debug(data, maybe_idxs, also_idxs, maybemodel):
@@ -86,7 +87,8 @@ def plot_debug(data, maybe_idxs, also_idxs, maybemodel):
     # print 'iteration %d : len(alsoinliers) = %d'%(iterations, len(alsoinliers))
     # print
 
-    x, y = data[:, 0], data[:, 1]
+    x, y, z = data[:, 0], data[:, 1], data[:, 2]
+    maybeYmodel, maybeZmodel = maybemodel
 
     maybeinliers_points = data[maybe_idxs]
     maybeinliers_x, maybeinliers_y = maybeinliers_points[:, 0], maybeinliers_points[:, 1]
@@ -96,13 +98,17 @@ def plot_debug(data, maybe_idxs, also_idxs, maybemodel):
 
     func_x = np.arange(0, 1024, dtype='int')
     # func_x = np.arange(x.min()-10, x.max()+10, dtype='int')
-    func_y = map(lambda x : params.model.func(x, maybemodel[0], maybemodel[1], maybemodel[2]), func_x)
+    func_y = map(lambda x : params.model.func(x, maybeYmodel[0], maybeYmodel[1], maybeYmodel[2]), func_x)
     func_y = np.array(func_y)
+    func_z = map(lambda x : params.model.func(x, maybeZmodel[0], maybeZmodel[1], maybeZmodel[2]), func_x)
+    func_z = np.array(func_z)
 
     plt.scatter(x, y, c='w', edgecolors='r', label='data')
+    plt.scatter(x, z, c='w', edgecolors='r', label='data')
     plt.scatter(alsoinliers_x, alsoinliers_y, edgecolors='b', label='alsoinliers')
     plt.scatter(maybeinliers_x, maybeinliers_y, c='g', edgecolors='g', label='maybeinliers')
-    plt.plot(func_x, func_y, 'm', lw=2, label='maybemodel')
+    plt.plot(func_x, func_y, 'm', lw=2, label='maybeYmodel')
+    plt.plot(func_x, func_z, 'm', lw=2, label='maybeZmodel')
 
     plt.xlim(0, 1024)
     plt.ylim(0, 600)

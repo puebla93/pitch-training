@@ -15,7 +15,9 @@ import get_results
 params = Obj(
     useKmeans=False,
     kmeans_k=6,
-    transform_resolution=(600, 1024)
+    transform_resolution=(600, 1024),
+    strike_zone_up = 107.8738,
+    strike_zone_down = 39.4462
 )
 
 def main2():
@@ -164,12 +166,20 @@ def fit_balls(balls_tracked):
     return balls, model
 
 def was_strike(homePlate, ballFunc):
-    func = lambda x: ballFunc[0] + ballFunc[1]*x + ballFunc[2]*x**2
+    YballFunc, ZballFunc = ballFunc
+    Yfunc = lambda x: YballFunc[0] + YballFunc[1]*x + YballFunc[2]*x**2
+    Zfunc = lambda x: ZballFunc[0] + ZballFunc[1]*x + ZballFunc[2]*x**2
+
     start, stop = int(homePlate[2, 0]), (int(homePlate[1, 0]) + 1)
     range1, range2 = homePlate[3, 1], homePlate[2, 1]
+    home_large_pixels = range2 - range1
+    ball_diameter_pixels = 2.86/17*home_large_pixels
     for x in range(start, stop):
-        if func(x) >= range1 and func(x) <= range2:
-            return True
+        if Yfunc(x) >= range1 and Yfunc(x) <= range2:
+            ball_pixels = Zfunc(x)*2
+            ball_high = 225 - (255*ball_diameter_pixels/ball_pixels)
+            if ball_high >= params.strike_zone_down and ball_high <= params.strike_zone_up:
+                return True
     return False
 
 def setUp_Reader(reader):

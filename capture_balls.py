@@ -82,6 +82,7 @@ def filter_by_radius(frame, contours):
             center, radius = cv2.minEnclosingCircle(cnt)
 
         radiusPercent = 100 * radius / frame_size
+        ball = Ball(center, radius)
 
         if radiusPercent > params.max_radiusPercent or radiusPercent < params.min_radiusPercent:
             if params.debugging:
@@ -90,7 +91,6 @@ def filter_by_radius(frame, contours):
             if params.debugging:
                 print "discarded by the ball is in the end of the image"
         else:
-            ball = Ball(center, radius)
             balls.append(ball)
             if params.debugging:
                 print "carded by radius"

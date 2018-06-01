@@ -105,12 +105,12 @@ class QuadraticLeastSquaresModel:
         self.func = lambda x, a, b, c : a+b*x+c*x*x
 
     def fit(self, data):
-        x, y = data[:, 0], data[:, 1]
-        # x, y, z = data[:, 0], data[:, 1], data[:, 2]
+        x, y, z = data[:, 0], data[:, 1], data[:, 2]
         x0 = np.array([0.0, 0.0, 0.0])
         sigma = np.ones(data.shape[0], 'float32')
-        values, _ = optimization.curve_fit(self.func, x, y, x0, sigma)
-        return values
+        Yvalues, _ = optimization.curve_fit(self.func, x, y, x0, sigma)
+        Zvalues, _ = optimization.curve_fit(self.func, x, z, x0, sigma)
+        return Yvalues, Zvalues
 
         # A = np.array([(19,20,24), (10,40,28), (10,50,31)])
 
@@ -123,9 +123,11 @@ class QuadraticLeastSquaresModel:
         # # [ 0.04919355  6.67741935]
 
     def get_error(self, data, model):
-        x, y = data[:, 0], data[:, 1]
-        y_fit = self.func(x, model[0], model[1], model[2])
-        err_per_point = (y - y_fit)**2 # sum squared error per row
+        x, y, z = data[:, 0], data[:, 1], data[:, 2]
+        Ymodel, Zmodel = model
+        y_fit = self.func(x, Ymodel[0], Ymodel[1], Ymodel[2])
+        z_fit = self.func(x, Zmodel[0], Zmodel[1], Zmodel[2])
+        err_per_point = (y - y_fit)**2 + (z - z_fit)**2# sum squared error per row
         return err_per_point
 
 def show_contours(cnt, frame, window_name):
@@ -200,14 +202,21 @@ def draw_finalResult(homePlate_cnt, balls, img_resolution, ballFunc, wasStrike):
     font = cv2.FONT_HERSHEY_SIMPLEX
     cv2.putText(user_img, pitch, (10,50), font, 2, ballColor, 2)
 
-    meanRadius = int(np.mean(map(lambda b: b.radius, balls)))
-    func = lambda x: ballFunc[0] + ballFunc[1]*x + ballFunc[2]*x**2
-    start, stop, step = meanRadius, img_resolution[1], meanRadius*2
-    for i in range(start, stop, step):
-        cv2.circle(user_img, (i, int(func(i))), meanRadius, ballColor, -1)
+    # meanRadius = int(np.mean(map(lambda b: b.radius, balls)))
+    # func = lambda x: ballFunc[0] + ballFunc[1]*x + ballFunc[2]*x**2
+    # start, stop, step = meanRadius, img_resolution[1], meanRadius*2
+    # for i in range(start, stop, step):
+        # cv2.circle(user_img, (i, int(func(i))), meanRadius, ballColor, -1)
+    # YballFunc, ZballFunc = ballFunc
+    # Yfunc = lambda x: YballFunc[0] + YballFunc[1]*x + YballFunc[2]*x**2
+    # Zfunc = lambda x: ZballFunc[0] + ZballFunc[1]*x + ZballFunc[2]*x**2
+    # i = int(Zfunc(0))
+    # while i < 1024:
+    #     cv2.circle(user_img, (i, int(Yfunc(i))), int(Zfunc(i)), ballColor, -1)
+    #     i += int(Zfunc(i))
 
-    # for ball in balls:
-        # cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), (0, 255, 0), -1)
+    for ball in balls:
+        cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), ballColor, -1)
         # cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), meanRadius, (0, 255, 0), -1)
 
     return user_img
@@ -230,14 +239,18 @@ def kmeans(frame, K):
     return result_frame
 
 def plot_fit(all_balls, n_balls):
-    all_balls = np.array(map(lambda b: b.center, all_balls))
-    x, y = all_balls[:, 0], all_balls[:, 1]
+    points = map(lambda ball: np.array([ball.center[0], ball.center[1], ball.radius]), all_balls)
+    points = np.array(points)
+    x, y, z = points[:, 0], points[:, 1], points[:, 2]
 
-    all_balls = np.array(map(lambda b: b.center, n_balls))
-    n_x, n_y = n_balls[:, 0], n_balls[:, 1]
+    points = map(lambda ball: np.array([ball.center[0], ball.center[1], ball.radius]), n_balls)
+    points = np.array(points)
+    n_x, n_y, n_z = points[:, 0], points[:, 1], points[:, 2]
 
     plt.plot(x, y, '-o')
+    plt.plot(x, z, '-o')
     plt.plot(n_x, n_y, '-o')
+    plt.plot(n_x, n_z, '-o')
 
     plt.xlim(0, 1024)
     plt.ylim(0, 600)
