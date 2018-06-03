@@ -118,17 +118,17 @@ def waitBalls(reader, PTM):
             break
 
         # removing noise from image
-        gray = filter_img(frame)
+        blur = filter_img(frame)
 
         # using kmeans on the image
         if params.useKmeans:
-            gray = kmeans(frame, params.kmeans_k)
+            blur = kmeans(frame, params.kmeans_k)
             if args.debugging:
-                cv2.imshow('kmeans', gray)
+                cv2.imshow('kmeans', blur)
                 cv2.waitKey(0)
 
         # transform the frame
-        warped = cv2.warpPerspective(gray, PTM, transform.params.transform_resolution)
+        warped = cv2.warpPerspective(frame, PTM, transform.params.transform_resolution)
 
         # finding the ball
         balls = capture_balls.get_balls(warped)
