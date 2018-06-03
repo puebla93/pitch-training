@@ -202,22 +202,8 @@ def draw_finalResult(homePlate_cnt, balls, img_resolution, ballFunc, wasStrike):
     font = cv2.FONT_HERSHEY_SIMPLEX
     cv2.putText(user_img, pitch, (10,50), font, 2, ballColor, 2)
 
-    # meanRadius = int(np.mean(map(lambda b: b.radius, balls)))
-    # func = lambda x: ballFunc[0] + ballFunc[1]*x + ballFunc[2]*x**2
-    # start, stop, step = meanRadius, img_resolution[1], meanRadius*2
-    # for i in range(start, stop, step):
-        # cv2.circle(user_img, (i, int(func(i))), meanRadius, ballColor, -1)
-    # YballFunc, ZballFunc = ballFunc
-    # Yfunc = lambda x: YballFunc[0] + YballFunc[1]*x + YballFunc[2]*x**2
-    # Zfunc = lambda x: ZballFunc[0] + ZballFunc[1]*x + ZballFunc[2]*x**2
-    # i = int(Zfunc(0))
-    # while i < 1024:
-    #     cv2.circle(user_img, (i, int(Yfunc(i))), int(Zfunc(i)), ballColor, -1)
-    #     i += int(Zfunc(i))
-
     for ball in balls:
         cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), ballColor, -1)
-        # cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), meanRadius, (0, 255, 0), -1)
 
     return user_img
 
