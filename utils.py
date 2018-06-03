@@ -194,7 +194,7 @@ def homeAVG(homes):
     contour = np.mean(contours, 0)
     return HomePlate(contour)
 
-def draw_finalResult(homePlate_cnt, balls, img_resolution, ballFunc, wasStrike):
+def draw_finalResult(homePlate_cnt, balls, img_resolution, wasStrike):
     user_img = cv2.cvtColor(np.zeros(img_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
     cv2.drawContours(user_img, [homePlate_cnt.astype('int32')], -1, (255, 255, 255), -1)
 
@@ -205,6 +205,31 @@ def draw_finalResult(homePlate_cnt, balls, img_resolution, ballFunc, wasStrike):
     for ball in balls:
         cv2.circle(user_img, (int(ball.center[0]), int(ball.center[1])), int(ball.radius), ballColor, -1)
 
+    return user_img
+
+def draw_strikeZone(img_resolution, ballFunc, wasStrike):
+    YballFunc, ZballFunc = ballFunc
+    Yfunc = lambda x: YballFunc[0] + YballFunc[1]*x + YballFunc[2]*x**2
+    Zfunc = lambda x: ZballFunc[0] + ZballFunc[1]*x + ZballFunc[2]*x**2
+
+    user_img = cv2.cvtColor(np.zeros(img_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
+    cv2.line(user_img, (250, int(186*2.31)), (350, int(186*2.31)), (255, 255, 255), 1)
+    cv2.line(user_img, (250, int(117*2.31)), (250, int(186*2.31)), (255, 255, 255), 1)
+    cv2.line(user_img, (350, int(117*2.31)), (250, int(117*2.31)), (255, 255, 255), 1)
+    cv2.line(user_img, (350, int(117*2.31)), (350, int(186*2.31)), (255, 255, 255), 1)
+    cv2.line(user_img, (350, img_resolution[0]-1), (250, img_resolution[0]-1), (255, 255, 255), 3)
+
+    ballColor, pitch = ((0, 255, 0), 'STRIKE') if wasStrike else ((0, 0, 255), 'BALL')
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(user_img, pitch, (10,50), font, 2, ballColor, 2)
+
+    x = int(Yfunc(913))
+    ball_diameter_pixels = 2.86/17*100
+    ball_pixels = Zfunc(913)*2
+    ball_high = 225 - (255*ball_diameter_pixels/ball_pixels)
+    y = int((225-ball_high)*2.31)
+    cv2.circle(user_img, (x,y), int(7*2.31), ballColor, -1)
+    
     return user_img
 
 def kmeans(frame, K):
