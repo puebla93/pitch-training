@@ -96,9 +96,10 @@ class HomePlate():
             return rolled_pts
 
 class Ball:
-    def __init__(self, center, radius):
+    def __init__(self, center, radius, capture_frame):
         self.center = center
         self.radius = radius
+        self.capture_frame = capture_frame
 
 class QuadraticLeastSquaresModel:
     def __init__(self):
@@ -194,11 +195,11 @@ def homeAVG(homes):
     contour = np.mean(contours, 0)
     return HomePlate(contour)
 
-def draw_finalResult(homePlate_cnt, balls, img_resolution, wasStrike):
+def draw_finalResult(homePlate_cnt, balls, img_resolution, wasStrike, velocity):
     user_img = cv2.cvtColor(np.zeros(img_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
     cv2.drawContours(user_img, [homePlate_cnt.astype('int32')], -1, (255, 255, 255), -1)
 
-    ballColor, pitch = ((0, 255, 0), 'STRIKE') if wasStrike else ((0, 0, 255), 'BALL')
+    ballColor, pitch = ((0, 255, 0), 'STRIKE '+velocity) if wasStrike else ((0, 0, 255), 'BALL '+velocity)
     font = cv2.FONT_HERSHEY_SIMPLEX
     cv2.putText(user_img, pitch, (10,50), font, 2, ballColor, 2)
 
@@ -207,7 +208,7 @@ def draw_finalResult(homePlate_cnt, balls, img_resolution, wasStrike):
 
     return user_img
 
-def draw_strikeZone(img_resolution, ballFunc, wasStrike):
+def draw_strikeZone(img_resolution, ballFunc, wasStrike, velocity):
     YballFunc, ZballFunc = ballFunc
     Yfunc = lambda x: YballFunc[0] + YballFunc[1]*x + YballFunc[2]*x**2
     Zfunc = lambda x: ZballFunc[0] + ZballFunc[1]*x + ZballFunc[2]*x**2
@@ -219,7 +220,7 @@ def draw_strikeZone(img_resolution, ballFunc, wasStrike):
     cv2.line(user_img, (350, int(117*2.31)), (350, int(186*2.31)), (255, 255, 255), 1)
     cv2.line(user_img, (350, img_resolution[0]-1), (250, img_resolution[0]-1), (255, 255, 255), 3)
 
-    ballColor, pitch = ((0, 255, 0), 'STRIKE') if wasStrike else ((0, 0, 255), 'BALL')
+    ballColor, pitch = ((0, 255, 0), 'STRIKE '+velocity) if wasStrike else ((0, 0, 255), 'BALL '+velocity)
     font = cv2.FONT_HERSHEY_SIMPLEX
     cv2.putText(user_img, pitch, (10,50), font, 2, ballColor, 2)
 
@@ -265,4 +266,31 @@ def plot_fit(all_balls, n_balls):
 
     plt.xlim(0, 1024)
     plt.ylim(0, 600)
+    plt.show()
+
+def fit_velocity(data):
+    model = lambda x, a, b: a + b*x
+    # func = lambda x, a, b, c: a + b*x + c*x*x
+
+    x, y = data[:, 0], data[:, 1]
+    x0 = np.array([0.0, 0.0])
+    # x0 = np.array([0.0, 0.0, 0.0])
+    sigma = np.ones(data.shape[0], 'float32')
+    values, _ = optimization.curve_fit(model, x, y, x0, sigma)
+    func = lambda x: values[0] + values[1]*x
+    # func = lambda x: values[0] + values[1]*x + values[2]*x*x
+    return func
+
+def plot_velocity(points, func):
+    x, y = points[:, 0], points[:, 1]
+
+    n_y = func(x)
+
+    plt.scatter(x, y, c='b')
+    # plt.plot(x, z, '-o')
+    plt.plot(x, n_y, c='g')
+    # plt.plot(n_x, n_z, '-o')
+
+    # plt.xlim(0, 1024)
+    # plt.ylim(0, 600)
     plt.show()

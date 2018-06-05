@@ -18,7 +18,7 @@ params = Obj(
                    # 2 It is a circle which completely covers the contour with minimum area
 )
 
-def get_balls(frame):
+def get_balls(frame, frame_number):
     mask = get_mask(frame)
 
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -27,7 +27,7 @@ def get_balls(frame):
         show_contours(contours, frame, 'all contours')
 
     filters = [filter_by_radius]
-    balls = filter_by(frame, filters, contours)
+    balls = filter_by(frame, filters, contours, frame_number)
 
     if params.debugging:
         cv2.destroyWindow('filters balls by radius')
@@ -57,13 +57,13 @@ def get_mask(frame):
 
     return fgmask
 
-def filter_by(frame, filters, contours):
+def filter_by(frame, filters, contours, frame_number):
     balls = contours
     for f in filters:
-        balls = f(frame, balls)
+        balls = f(frame, balls, frame_number)
     return balls
 
-def filter_by_radius(frame, contours):
+def filter_by_radius(frame, contours, frame_number):
     balls = []
     frame_size = frame.shape[0] * frame.shape[1]    
     for cnt in contours:
@@ -82,7 +82,7 @@ def filter_by_radius(frame, contours):
             center, radius = cv2.minEnclosingCircle(cnt)
 
         radiusPercent = 100 * radius / frame_size
-        ball = Ball(center, radius)
+        ball = Ball(center, radius, frame_number)
 
         if radiusPercent > params.max_radiusPercent or radiusPercent < params.min_radiusPercent:
             if params.debugging:

@@ -7,7 +7,7 @@ import capture_balls
 from cvinput import cvwindows
 from parse_args import args
 from utils import Reader, Obj, HomePlate, Ball
-from utils import show_contours, homeAVG, kmeans, draw_finalResult, plot_fit, draw_strikeZone
+from utils import show_contours, homeAVG, kmeans, draw_finalResult, plot_fit, draw_strikeZone, fit_velocity, plot_velocity
 from filtering import filter_img
 import ransac
 import get_results
@@ -16,6 +16,9 @@ params = Obj(
     useKmeans=False,
     kmeans_k=6,
     transform_resolution=(600, 1024),
+    home_large=43.18,
+    ball_diameter=7.2644,
+    camera_hight=225,
     strike_zone_up = 107.8738,
     strike_zone_down = 39.4462
 )
@@ -51,9 +54,12 @@ def main():
 
     wasStrike = was_strike(new_homePlate, model)
 
+    points = get_wordPoints(balls, new_homePlate)
+    velocity = get_velocity(points)
+
     # draw final result
-    user_img = draw_finalResult(new_homePlate, balls, params.transform_resolution, wasStrike)
-    # user_img = draw_strikeZone((int(225*2.31), 600), model, wasStrike)
+    # user_img = draw_finalResult(new_homePlate, balls, params.transform_resolution, wasStrike, velocity)
+    user_img = draw_strikeZone((int(225*2.31), 600), model, wasStrike, velocity)
     cv2.imshow('RESULT', user_img)
     cv2.waitKey(0)
 
@@ -111,6 +117,7 @@ def computeTransform(reader, home):
 
 def waitBalls(reader, PTM):
     balls_tracked = []
+    frame_number = 0
     # loop
     while True:
         # reading a frame
@@ -132,7 +139,7 @@ def waitBalls(reader, PTM):
         warped = cv2.warpPerspective(frame, PTM, transform.params.transform_resolution)
 
         # finding the ball
-        balls = capture_balls.get_balls(warped)
+        balls = capture_balls.get_balls(warped, frame_number)
         if balls.shape[0] > 0:
             balls_tracked.append(balls)
 
@@ -150,16 +157,17 @@ def waitBalls(reader, PTM):
 
         cv2.imshow('camera', frame)
         cv2.waitKey(1)
+        frame_number += 1
 
     cv2.destroyWindow('camera')
     return np.array(balls_tracked)
 
 def fit_balls(balls_tracked):
     all_balls = np.array([ball for balls in balls_tracked for ball in balls])
-    points = map(lambda ball: np.array([ball.center[0], ball.center[1], ball.radius]), all_balls)
+    points = map(lambda ball: np.array([ball.center[0], ball.center[1], ball.radius, ball.capture_frame]), all_balls)
     points = np.array(points)
     new_points, model = ransac.ransac(points)
-    balls = map(lambda point: Ball(np.array(point[:2]), point[2]), new_points)
+    balls = map(lambda point: Ball(np.array(point[:2]), point[2], point[3]), new_points)
 
     if args.debugging:
         plot_fit(all_balls, balls)
@@ -174,14 +182,52 @@ def was_strike(homePlate, ballFunc):
     start, stop = int(homePlate[2, 0]), (int(homePlate[1, 0]) + 1)
     range1, range2 = homePlate[3, 1], homePlate[2, 1]
     home_large_pixels = range2 - range1
-    ball_diameter_pixels = 2.86/17*home_large_pixels
+    ball_diameter_pixels = params.ball_diameter / params.home_large * home_large_pixels
     for x in range(start, stop):
         if Yfunc(x) >= range1 and Yfunc(x) <= range2:
             ball_pixels = Zfunc(x)*2
-            ball_high = 225 - (255*ball_diameter_pixels/ball_pixels)
+            ball_high = params.camera_hight - (params.camera_hight * ball_diameter_pixels / ball_pixels)
             if ball_high >= params.strike_zone_down and ball_high <= params.strike_zone_up:
                 return True
     return False
+
+def get_wordPoints(balls, homePlate):
+    home_large_pixels = homePlate[2, 1] - homePlate[3, 1]
+    ball_diameter_pixels = params.ball_diameter / params.home_large * home_large_pixels
+    cm_per_pixels = params.home_large/home_large_pixels
+    points = []
+    for ball in balls:
+        ball_high = params.camera_hight - (params.camera_hight * ball_diameter_pixels / ball.radius)
+        new_point = [ball.center[0] * cm_per_pixels, ball.center[1] * cm_per_pixels, ball_high, ball.capture_frame]
+        points.append(np.array(new_point))
+    points = np.array(points)
+    return points
+
+def get_velocity(points):
+    velocity_per_point = []
+    time_between_frames = 1/187.*0.0002778 # convert time_between_frames in seconds to hours
+    cm_to_mile = 6.2137119e-6
+    i = 0
+    while i < len(points)-1:
+        cm_dist = ((points[i][0]-points[i+1][0])**2+(points[i][1]-points[i+1][1])**2+(points[i][2]-points[i+1][2])**2)**.5
+        
+        mile_dist = cm_dist*cm_to_mile
+        time = abs(points[i][3]-points[i+1][3])*time_between_frames
+
+        velocity_point = mile_dist/time
+        velocity_per_point.append(velocity_point)
+
+        i += 1
+
+    frame_numbers = points[:,3]
+    data = np.array(map(lambda f, v: np.array([f, v]), frame_numbers[1:], velocity_per_point))
+    func = fit_velocity(data)
+    ball_velocity = func(points[-1,3])
+
+    if args.debugging:
+        plot_velocity(data, func)
+
+    return str(int(ball_velocity)) + " MPH"
 
 def setUp_Reader(reader):
     folder_path = os.listdir("pelota")
