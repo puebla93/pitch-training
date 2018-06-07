@@ -210,6 +210,7 @@ def get_velocity(points):
     i = 0
     while i < len(points)-1:
         cm_dist = ((points[i][0]-points[i+1][0])**2+(points[i][1]-points[i+1][1])**2+(points[i][2]-points[i+1][2])**2)**.5
+        # cm_dist = ((points[i][0]-points[i+1][0])**2)**.5
         
         mile_dist = cm_dist*cm_to_mile
         time = abs(points[i][3]-points[i+1][3])*time_between_frames

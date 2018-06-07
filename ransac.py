@@ -10,7 +10,7 @@ params = Obj(
     # the minimum number of data values required to fit the model
     n=3,
     # the maximum number of iterations allowed in the algorithm
-    max_iters=30,
+    max_iters=100,
     # a threshold value for determining when a data point fits a model
     eps=1e3,
     # a percent of close data values required to assert that a model fits well to data
