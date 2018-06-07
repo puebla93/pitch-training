@@ -1,6 +1,7 @@
 import os
 import math
 import cv2
+import json
 import numpy as np
 import scipy.optimize as optimization
 import matplotlib.pyplot as plt
@@ -37,7 +38,28 @@ class Reader():
         elif self.params.read_from == "folder":
             path = self.params.folder_path + self.params.frameNames[self._frameNumber]
             self.actualFrame = cv2.imread(path)
+            # self.rectify_frame()
         return self.actualFrame
+
+    def rectify_frame(self):
+        mtx, dist = self.load_calibrationMatrix('calibration.json')
+        h,  w = self.actualFrame.shape[:2]
+        newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
+        # undistort
+        dst = cv2.undistort(self.actualFrame, mtx, dist, None, newcameramtx)
+
+        # crop the image
+        x, y, w, h = roi
+        self.actualFrame = dst[y:y+h, x:x+w]
+
+    def load_calibrationMatrix(self, path):
+        with open(path) as f:
+            loadeddict = json.load(f)
+
+        mtxloaded = np.array(loadeddict.get('camera_matrix'))
+        distloaded = np.array(loadeddict.get('dist_coeff'))
+        
+        return mtxloaded, distloaded
 
     def restart_reading(self):
         self.actualFrame = None
@@ -47,16 +69,16 @@ class Reader():
         elif self.params.read_from == "folder":
             self._frameNumber = 0
 
-    def setUp(self, nparams):
-        self.params.setattr(nparams)
-        if nparams.has_key("read_from") and nparams["read_from"] == "camera" and self.capture is None:
-            self.capture = cv2.VideoCapture(self.params.camera_index)
-
     def get_frameName(self):
         if len(self.params.frameNames) > self._frameNumber:
             return self.params.frameNames[self._frameNumber]
         else:
             return "-1"
+
+    def setUp(self, nparams):
+        self.params.setattr(nparams)
+        if nparams.has_key("read_from") and nparams["read_from"] == "camera" and self.capture is None:
+            self.capture = cv2.VideoCapture(self.params.camera_index)
 
     def __setDefaults__(self):
         listOfFrames = os.listdir("videos/Tue Jul  4 13:26:23 2017/")
@@ -270,7 +292,7 @@ def plot_fit(all_balls, n_balls):
 
 def fit_velocity(data):
     model = lambda x, a, b: a + b*x
-    # func = lambda x, a, b, c: a + b*x + c*x*x
+    # model = lambda x, a, b, c: a + b*x + c*x*x
 
     x, y = data[:, 0], data[:, 1]
     x0 = np.array([0.0, 0.0])
