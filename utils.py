@@ -150,7 +150,9 @@ class QuadraticLeastSquaresModel:
         Ymodel, Zmodel = model
         y_fit = self.func(x, Ymodel[0], Ymodel[1], Ymodel[2])
         z_fit = self.func(x, Zmodel[0], Zmodel[1], Zmodel[2])
-        err_per_point = (y - y_fit)**2 + (z - z_fit)**2# sum squared error per row
+        y_error = (y - y_fit)**2
+        z_error = (z - z_fit)**2
+        err_per_point = y_error + z_error# sum squared error per row
         return err_per_point
 
 def show_contours(cnt, frame, window_name):
@@ -236,10 +238,7 @@ def draw_strikeZone(img_resolution, ballFunc, wasStrike, velocity):
     Zfunc = lambda x: ZballFunc[0] + ZballFunc[1]*x + ZballFunc[2]*x**2
 
     user_img = cv2.cvtColor(np.zeros(img_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
-    cv2.line(user_img, (250, int(186*2.31)), (350, int(186*2.31)), (255, 255, 255), 1)
-    cv2.line(user_img, (250, int(117*2.31)), (250, int(186*2.31)), (255, 255, 255), 1)
-    cv2.line(user_img, (350, int(117*2.31)), (250, int(117*2.31)), (255, 255, 255), 1)
-    cv2.line(user_img, (350, int(117*2.31)), (350, int(186*2.31)), (255, 255, 255), 1)
+    cv2.rectangle(user_img, (250, int(117*2.31)), (350, int(186*2.31)), (255, 255, 255), 1)
     cv2.line(user_img, (350, img_resolution[0]-1), (250, img_resolution[0]-1), (255, 255, 255), 3)
 
     ballColor, pitch = ((0, 255, 0), 'STRIKE '+velocity) if wasStrike else ((0, 0, 255), 'BALL '+velocity)
@@ -249,7 +248,7 @@ def draw_strikeZone(img_resolution, ballFunc, wasStrike, velocity):
     x = int(Yfunc(913))
     ball_diameter_pixels = 2.86/17*100
     ball_pixels = Zfunc(913)*2
-    ball_high = 225 - (255*ball_diameter_pixels/ball_pixels)
+    ball_high = 225 - (225*ball_diameter_pixels/ball_pixels)
     y = int((225-ball_high)*2.31)
     cv2.circle(user_img, (x,y), int(7*2.31), ballColor, -1)
     

@@ -53,7 +53,6 @@ def get_mask(frame):
             fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, params.kernel)
         if params.debugging:
             cv2.imshow('Background Subtractor', fgmask)
-    # cv2.waitKey(0)
 
     return fgmask
 

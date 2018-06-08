@@ -16,6 +16,7 @@ params = Obj(
     useKmeans=False,
     kmeans_k=6,
     transform_resolution=(600, 1024),
+    camera_fps=187.,
     home_large=43.18,
     ball_diameter=7.2644,
     camera_hight=225,
@@ -84,13 +85,11 @@ def calibrateHome(reader):
                 cv2.imshow('kmeans', blur)
                 cv2.waitKey(0)
 
-        gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)        
+        gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
 
         # finding a list of homes
         homes = detect_homes.get_homes(gray)
         if homes is None or len(homes) == 0:
-            print reader.get_frameName()
-            cv2.waitKey(0)
             continue
 
         # keep the best home
@@ -134,9 +133,12 @@ def waitBalls(reader, PTM):
             if args.debugging:
                 cv2.imshow('kmeans', blur)
                 cv2.waitKey(0)
+        
+        gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
 
         # transform the frame
-        warped = cv2.warpPerspective(frame, PTM, transform.params.transform_resolution)
+        # warped = cv2.warpPerspective(frame, PTM, transform.params.transform_resolution)
+        warped = cv2.warpPerspective(gray, PTM, transform.params.transform_resolution)
 
         # finding the ball
         balls = capture_balls.get_balls(warped, frame_number)
@@ -181,23 +183,24 @@ def was_strike(homePlate, ballFunc):
 
     start, stop = int(homePlate[2, 0]), (int(homePlate[1, 0]) + 1)
     range1, range2 = homePlate[3, 1], homePlate[2, 1]
-    home_large_pixels = range2 - range1
+    home_large_pixels = abs(range2 - range1)
     ball_diameter_pixels = params.ball_diameter / params.home_large * home_large_pixels
     for x in range(start, stop):
-        if Yfunc(x) >= range1 and Yfunc(x) <= range2:
-            ball_pixels = Zfunc(x)*2
+        y = Yfunc(x)
+        if y >= range1 and y <= range2:
+            ball_pixels = Zfunc(x)*2.
             ball_high = params.camera_hight - (params.camera_hight * ball_diameter_pixels / ball_pixels)
             if ball_high >= params.strike_zone_down and ball_high <= params.strike_zone_up:
                 return True
     return False
 
 def get_wordPoints(balls, homePlate):
-    home_large_pixels = homePlate[2, 1] - homePlate[3, 1]
+    home_large_pixels = abs(homePlate[2, 1] - homePlate[3, 1])
     ball_diameter_pixels = params.ball_diameter / params.home_large * home_large_pixels
-    cm_per_pixels = params.home_large/home_large_pixels
     points = []
     for ball in balls:
-        ball_high = params.camera_hight - (params.camera_hight * ball_diameter_pixels / ball.radius)
+        ball_high = params.camera_hight - (params.camera_hight * ball_diameter_pixels / (ball.radius*2.))
+        cm_per_pixels = params.ball_diameter/(ball.radius*2.)
         new_point = [ball.center[0] * cm_per_pixels, ball.center[1] * cm_per_pixels, ball_high, ball.capture_frame]
         points.append(np.array(new_point))
     points = np.array(points)
@@ -205,7 +208,8 @@ def get_wordPoints(balls, homePlate):
 
 def get_velocity(points):
     velocity_per_point = []
-    time_between_frames = 1/187.*0.0002778 # convert time_between_frames in seconds to hours
+    frame_numbers = []
+    time_between_frames = 1/params.camera_fps*0.0002778 # convert time_between_frames in seconds to hours
     cm_to_mile = 6.2137119e-6
     i = 0
     while i < len(points)-1:
@@ -214,14 +218,17 @@ def get_velocity(points):
         
         mile_dist = cm_dist*cm_to_mile
         time = abs(points[i][3]-points[i+1][3])*time_between_frames
+        if time == 0:
+            i += 1
+            continue
 
         velocity_point = mile_dist/time
         velocity_per_point.append(velocity_point)
+        frame_numbers.append(points[i+1,3])
 
         i += 1
 
-    frame_numbers = points[:,3]
-    data = np.array(map(lambda f, v: np.array([f, v]), frame_numbers[1:], velocity_per_point))
+    data = np.array(map(lambda f, v: np.array([f, v]), frame_numbers, velocity_per_point))
     func = fit_velocity(data)
     ball_velocity = func(points[-1,3])
 
