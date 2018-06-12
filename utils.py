@@ -254,6 +254,23 @@ def draw_strikeZone(img_resolution, ballFunc, wasStrike, velocity):
     
     return user_img
 
+def draw_SideTrajectory(img_resolution, balls, ZballFunc, wasStrike, velocity):
+    Zfunc = lambda x: ZballFunc[0] + ZballFunc[1]*x + ZballFunc[2]*x**2
+    user_img = cv2.cvtColor(np.zeros(img_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
+
+    ballColor, pitch = ((0, 255, 0), 'STRIKE '+velocity) if wasStrike else ((0, 0, 255), 'BALL '+velocity)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(user_img, pitch, (10,50), font, 2, ballColor, 2)
+
+    ball_diameter_pixels = 2.86/17*100
+    for ball in balls:
+        ball_pixels = Zfunc(ball.center[0])*2
+        ball_high = 225 - (225*ball_diameter_pixels/ball_pixels)
+        y = int((225-ball_high)*2.31)
+        cv2.circle(user_img, (int(ball.center[0]), y), int(7*2.31), ballColor, -1)
+    
+    return user_img
+
 def kmeans(frame, K):
     Z = frame.reshape((-1, 3))
 

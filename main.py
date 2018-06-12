@@ -7,7 +7,7 @@ import capture_balls
 from cvinput import cvwindows
 from parse_args import args
 from utils import Reader, Obj, HomePlate, Ball
-from utils import show_contours, homeAVG, kmeans, draw_finalResult, plot_fit, draw_strikeZone, fit_velocity, plot_velocity
+from utils import show_contours, homeAVG, kmeans, draw_finalResult, plot_fit, draw_strikeZone, fit_velocity, plot_velocity, draw_SideTrajectory
 from filtering import filter_img
 import ransac
 import get_results
@@ -61,6 +61,7 @@ def main():
     # draw final result
     # user_img = draw_finalResult(new_homePlate, balls, params.transform_resolution, wasStrike, velocity)
     user_img = draw_strikeZone((int(225*2.31), 600), model, wasStrike, velocity)
+    # user_img = draw_SideTrajectory((int(225*2.31), 1024), balls, model[1], wasStrike, velocity)
     cv2.imshow('RESULT', user_img)
     cv2.waitKey(0)
 
