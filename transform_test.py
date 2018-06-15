@@ -3,50 +3,58 @@ import numpy as np
 import detect_homes
 import transform
 from filtering import filter_img
-from utils import Obj, HomePlate
+from utils import Obj, HomePlate, homeAVG
 from cvinput import cvwindows
 from parse_args import args
 import beep
 
 def main():
+    resolution = (640, 480)
     detect_homes.setUp({"debugging":args.debugging})
-    transform.setUp({"debugging":args.debugging})
+    transform.setUp({"debugging":args.debugging, "transform_resolution":resolution, "size_homePercenct":1./4})
 
     camera = cvwindows.create('camera')
     transform_camera = cvwindows.create('transform')
 
     capture = cv2.VideoCapture(args.camera)
-    # set_props(capture, ["FRAME_WIDTH", "FRAME_HEIGHT", "FPS"], [320, 240, 187])
-    set_props(capture, ["FRAME_WIDTH", "FRAME_HEIGHT"], [320, 240])
+    set_props(capture, ["FRAME_WIDTH", "FRAME_HEIGHT", "FPS"], [resolution[0], resolution[1], 5])
+    # set_props(capture, ["FRAME_WIDTH", "FRAME_HEIGHT", "FPS"], [320, 240, 5])
 
     save = False
     frames = []
+    dual_frames = []
 
     while cvwindows.event_loop():
         _, frame = capture.read()
-        camera.show(frame)
         
-        # removing noise from image    
-        gray = filter_img(frame)
+        # removing noise from image
+        blur = filter_img(frame)
+
         if cvwindows.last_key == ' ':
             beep.beep()
             save = not save
 
+        gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
+
         # finding a list of homes
-        contours = detect_homes.get_homes(gray)
-        if contours is None or len(contours) == 0:
-            user_img = cv2.cvtColor(np.zeros((600, 1024), 'float32'), cv2.COLOR_GRAY2BGR)
+        homes = detect_homes.get_homes(gray)
+        if homes is None or len(homes) == 0:
+            # user_img = cv2.cvtColor(np.zeros((600, 1024), 'float32'), cv2.COLOR_GRAY2BGR)
+            # user_img = np.zeros((480, 640*2))
+            user_img = np.zeros((resolution[1], resolution[0]), 'float32')
             transform_camera.show(user_img)
             if save:
                 frames.append(frame)
         else:
-            mean = np.mean(contours, 0)
-            home = HomePlate(mean)
+            # keep the best home
+            home = homeAVG(homes)
 
             PTM, new_homePlate_cnt = transform.homePlate_transform(gray, home)
-            warped = cv2.warpPerspective(gray, PTM, transform.params.transform_resolution)        
+            warped = cv2.warpPerspective(frame, PTM, transform.params.transform_resolution)        
 
-            transform_camera.show(warped)
+            res = cv2.resize(warped, resolution, interpolation = cv2.INTER_CUBIC)
+            # transform_camera.show(warped)
+            transform_camera.show(res)
 
             if args.debugging:
                 cnt = np.reshape(home.ordered_pts, (5,1,2))
@@ -68,7 +76,15 @@ def main():
                 cv2.imshow('user_img', user_img)
 
                 cv2.waitKey(0)
-        
+
+            cv2.drawContours(frame, [home.contour.astype('int32')], -1, (0, 0, 255), 2)
+            dual_frame = np.zeros((resolution[1], resolution[0]*2, 3), 'float32')
+            dual_frame[:, :resolution[0], :] = frame
+            dual_frame[:, resolution[0]:, :] = res
+            dual_frames.append(dual_frame)
+            # transform_camera.show(dual_frame)
+
+        camera.show(frame)
         if args.debugging:
             cv2.destroyWindow('a')
             cv2.destroyWindow('a2')
@@ -78,6 +94,13 @@ def main():
 
     if len(frames) != 0:
         write_frames(frames)
+    if len(dual_frames) != 0:
+        i = 0
+        for dual_frame in dual_frames:
+            file_name = 'presentation/' + str(i) + ".jpg"
+            cv2.imwrite(file_name, dual_frame)
+            i += 1
+        print "done"
 
 def write_frames(frames):
     import os

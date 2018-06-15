@@ -201,8 +201,8 @@ def get_wordPoints(balls, homePlate):
     points = []
     for ball in balls:
         ball_high = params.camera_hight - (params.camera_hight * ball_diameter_pixels / (ball.radius*2.))
-        cm_per_pixels = params.ball_diameter/(ball.radius*2.)
-        new_point = [ball.center[0] * cm_per_pixels, ball.center[1] * cm_per_pixels, ball_high, ball.capture_frame]
+        cm_per_pixel = params.ball_diameter/(ball.radius*2.)
+        new_point = [ball.center[0] * cm_per_pixel, ball.center[1] * cm_per_pixel, ball_high, ball.capture_frame]
         points.append(np.array(new_point))
     points = np.array(points)
     return points
@@ -210,7 +210,7 @@ def get_wordPoints(balls, homePlate):
 def get_velocity(points):
     velocity_per_point = []
     frame_numbers = []
-    time_between_frames = 1/params.camera_fps*0.0002778 # convert time_between_frames in seconds to hours
+    time_between_frames = 1./params.camera_fps*0.0002778 # convert time_between_frames in seconds to hours
     cm_to_mile = 6.2137119e-6
     i = 0
     while i < len(points)-1:
