@@ -324,11 +324,14 @@ def plot_velocity(points, func):
 
     n_y = func(x)
 
-    plt.scatter(x, y, c='b')
+    plt.scatter(x, y, c='b', label='velocidad en cada frame')
     # plt.plot(x, z, '-o')
-    plt.plot(x, n_y, c='g')
+    plt.plot(x, n_y, c='r', lw=2, label='aprox de la velocidad')
     # plt.plot(n_x, n_z, '-o')
 
     # plt.xlim(0, 1024)
     # plt.ylim(0, 600)
+    plt.xlabel('frames')
+    plt.ylabel('velocidad en MPH')
+    plt.legend()
     plt.show()
