@@ -6,7 +6,7 @@ from filtering import filter_img
 from util.utils import Obj, HomePlate, homeAVG
 from util.cvinput import cvwindows
 from parse_args import args
-import beep
+from util import beep
 
 def main():
     resolution = (640, 480)
