@@ -14,6 +14,7 @@ class PitchTrainig():
         self.camera = cvwindows.create('camera')
 
         self.reader = Reader()
+        self.params = Obj()
 
         # setting up reader, detect_homes and capture_balls params
         self.__setUp_Reader__()
@@ -111,7 +112,7 @@ class PitchTrainig():
         self.camera.show(contours_img)
 
     def __draw_result__(self, homePlate_cnt, ball_tracking, ball_func):
-        user_img = cv2.cvtColor(np.zeros(params.transform_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
+        user_img = cv2.cvtColor(np.zeros(self.params.transform_resolution, 'float32'), cv2.COLOR_GRAY2BGR)
         cv2.drawContours(user_img, [homePlate_cnt.astype('int32')], -1, (255, 255, 255), -1)
 
         for balls in ball_tracking:
@@ -121,7 +122,7 @@ class PitchTrainig():
         return user_img
 
     def setUp(self, nparams):
-        params.setattr(nparams)
+        self.params.setattr(nparams)
 
     def __setUp_Reader__(self):
         folder_path = os.listdir("videos")
