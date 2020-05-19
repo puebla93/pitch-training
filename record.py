@@ -4,7 +4,7 @@ from datetime import datetime
 import cv2
 from util import beep
 from util.cvinput import cvwindows
-from parse_args import args
+from util.parse_args import args
 
 def main():
     camera = cvwindows.create('camera')

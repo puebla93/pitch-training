@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 import json
-from parse_args import args
+from util.parse_args import args
 import math
 
 drawing = False # true if mouse is pressed

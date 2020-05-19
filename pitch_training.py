@@ -5,7 +5,7 @@ import detect_homes
 from util import transform
 import capture_balls
 from util.cvinput import cvwindows
-from parse_args import args
+from util.parse_args import args
 from util.utils import Reader, Obj, show_contours, HomePlate, kmeans
 from filtering import filter_img
 

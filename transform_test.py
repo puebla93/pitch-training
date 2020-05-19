@@ -5,7 +5,7 @@ from util import transform
 from filtering import filter_img
 from util.utils import Obj, HomePlate, homeAVG
 from util.cvinput import cvwindows
-from parse_args import args
+from util.parse_args import args
 from util import beep
 
 def main():
