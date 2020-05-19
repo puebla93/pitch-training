@@ -25,7 +25,7 @@ params = Obj(
 )
 
 def main2():
-    from pitch_trainig import PitchTrainig
+    from pitch_training import PitchTrainig
     pitchTrainig = PitchTrainig()
     while cvwindows.event_loop():
         home = pitchTrainig.calibrateHome()
@@ -239,9 +239,10 @@ def get_velocity(points):
     return str(int(ball_velocity)) + " MPH"
 
 def setUp_Reader(reader):
-    folder_path = os.listdir("pelota")
+    test_cases_path = "test_cases/ps_eye (320x240_187fps)"
+    folder_path = os.listdir(test_cases_path)
     folder_path.sort()
-    path = 'pelota/' + folder_path[args.test_folder] + '/'
+    path = test_cases_path+ '/' + folder_path[args.test_folder] + '/'
     framesNames = os.listdir(path)
     framesNames.sort(key=lambda frameName: int(frameName[:-4]))
     reader._frameNumber = args.test_frame - 1

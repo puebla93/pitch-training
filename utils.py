@@ -81,11 +81,13 @@ class Reader():
             self.capture = cv2.VideoCapture(self.params.camera_index)
 
     def __setDefaults__(self):
-        listOfFrames = os.listdir("videos/Tue Jul  4 13:26:23 2017/")
+        folder_path="test_cases/ps_eye (320x240_187fps)/Tue May 22 15:26:55 2018/"
+        listOfFrames = os.listdir(folder_path)
         listOfFrames.sort(key=lambda frameName: int(frameName[:-4]))
         self.params = Obj(
             read_from="folder",
-            folder_path="videos/Tue Jul  4 13:26:23 2017/",
+            test_cases_path="test_cases",
+            folder_path=folder_path,
             frameNames=listOfFrames,
             camera_index=0
             )
