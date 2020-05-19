@@ -11,7 +11,7 @@ params = Obj(
     max_radiusPercent=.01,
     min_radiusPercent=.0015,
     home_begin=913.76,
-    fgbg=cv2.BackgroundSubtractorMOG2(),
+    fgbg=cv2.createBackgroundSubtractorMOG2(),
     kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)),
     aproxContour=0 # 0 It is a straight rectangle, it doesn't consider the rotation of the contour
                    # 1 Drawn with minimum area, so it considers the rotation also.
