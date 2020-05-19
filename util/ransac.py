@@ -119,6 +119,3 @@ def plot_debug(data, maybe_idxs, also_idxs, maybemodel):
 
 def setUp(nparams):
     params.setattr(nparams)
-
-if __name__ == '__main__':
-    pass

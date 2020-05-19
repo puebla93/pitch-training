@@ -9,7 +9,7 @@ from parse_args import args
 from util.utils import Reader, Obj, HomePlate, Ball
 from util.utils import show_contours, homeAVG, kmeans, draw_finalResult, plot_fit, draw_strikeZone, fit_velocity, plot_velocity, draw_SideTrajectory
 from filtering import filter_img
-import ransac
+from util import ransac
 import get_results
 
 params = Obj(
