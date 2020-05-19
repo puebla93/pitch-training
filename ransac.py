@@ -77,7 +77,7 @@ def random_partition(n_data):
 def fit_points(points, fit):
     func = params.model.func
     Yfit, Zfit = fit
-    new_points = map(lambda point: [point[0], func(point[0], Yfit[0], Yfit[1], Yfit[2]), func(point[0], Zfit[0], Zfit[1], Zfit[2]), point[3]], points)
+    new_points = [[point[0], func(point[0], Yfit[0], Yfit[1], Yfit[2]), func(point[0], Zfit[0], Zfit[1], Zfit[2]), point[3]] for point in points]
     return np.array(new_points)
 
 def plot_debug(data, maybe_idxs, also_idxs, maybemodel):
@@ -98,9 +98,9 @@ def plot_debug(data, maybe_idxs, also_idxs, maybemodel):
 
     func_x = np.arange(0, 1024, dtype='int')
     # func_x = np.arange(x.min()-10, x.max()+10, dtype='int')
-    func_y = map(lambda x : params.model.func(x, maybeYmodel[0], maybeYmodel[1], maybeYmodel[2]), func_x)
+    func_y = [params.model.func(x, maybeYmodel[0], maybeYmodel[1], maybeYmodel[2]) for x in func_x]
     func_y = np.array(func_y)
-    func_z = map(lambda x : params.model.func(x, maybeZmodel[0], maybeZmodel[1], maybeZmodel[2]), func_x)
+    func_z = [params.model.func(x, maybeZmodel[0], maybeZmodel[1], maybeZmodel[2]) for x in func_x]
     func_z = np.array(func_z)
 
     plt.scatter(x, y, c='w', edgecolors='r', label='data')

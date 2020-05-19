@@ -167,10 +167,10 @@ def waitBalls(reader, PTM):
 
 def fit_balls(balls_tracked):
     all_balls = np.array([ball for balls in balls_tracked for ball in balls])
-    points = map(lambda ball: np.array([ball.center[0], ball.center[1], ball.radius, ball.capture_frame]), all_balls)
+    points = [np.array([ball.center[0], ball.center[1], ball.radius, ball.capture_frame]) for ball in all_balls]
     points = np.array(points)
     new_points, model = ransac.ransac(points)
-    balls = map(lambda point: Ball(np.array(point[:2]), point[2], point[3]), new_points)
+    balls = [Ball(np.array(point[:2]), point[2], point[3]) for point in new_points]
 
     if args.debugging:
         plot_fit(all_balls, balls)
@@ -229,7 +229,8 @@ def get_velocity(points):
 
         i += 1
 
-    data = np.array(map(lambda f, v: np.array([f, v]), frame_numbers, velocity_per_point))
+    data_list = list(map(lambda f, v: np.array([f, v]), frame_numbers, velocity_per_point))
+    data = np.array(data_list)
     func = fit_velocity(data)
     ball_velocity = func(points[-1,3])
 

@@ -39,7 +39,7 @@ def get_homes(frame):
         cv2.waitKey(0)
         cv2.destroyWindow('homes')
 
-    homes = map(lambda home: HomePlate(home), homes)
+    homes = [HomePlate(home) for home in homes]
     return homes
 
 def filter_by(frame, filters, contours):
@@ -119,7 +119,7 @@ def filter_by_sidesRatio(frame, contours):
 
         min_dist = int(((lines[0][0][0] - lines[0][1][0])**2+(lines[0][0][1] - lines[0][1][1])**2)**.5)
 
-        winSize = min_dist/2 if min_dist % 4 != 0 else min_dist/2 - 1
+        winSize = min_dist//2 if min_dist % 4 != 0 else min_dist//2 - 1
         refined_corners = cnt.astype('float32')
         refining_corners(frame, refined_corners, (winSize, winSize))
         refined_lines = get_lines_sorted_by_dist(refined_corners)

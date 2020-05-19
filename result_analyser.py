@@ -29,25 +29,25 @@ def get_balls():
 
     test_balls = test_data.values()
     test_balls.sort(key=lambda ball: ball[0][0])
-    result_balls = map(lambda key: result_data[key], test_data.keys())
+    result_balls = [result_data[key] for key in test_data.keys()]
     result_balls.sort(key=lambda ball: ball[0][0])
     return test_balls, result_balls
 
 def get_cordenates():
     test_balls, result_balls = get_balls()
 
-    x_test = np.array(map(lambda ball: ball[0][0], test_balls))
+    x_test = np.array([ball[0][0] for ball in test_balls])
     # x_test.sort()
-    y_test = np.array(map(lambda ball: ball[0][1], test_balls))
+    y_test = np.array([ball[0][1] for ball in test_balls])
     # y_test.sort()
-    z_test = np.array(map(lambda ball: ball[1], test_balls))
+    z_test = np.array([ball[1] for ball in test_balls])
     # z_test.sort()
 
-    x_result = np.array(map(lambda ball: ball[0][0], result_balls))
+    x_result = np.array([ball[0][0] for ball in result_balls])
     # x_result.sort()
-    y_result = np.array(map(lambda ball: ball[0][1], result_balls))
+    y_result = np.array([ball[0][1] for ball in result_balls])
     # y_result.sort()
-    z_result = np.array(map(lambda ball: ball[1], result_balls))
+    z_result = np.array([ball[1] for ball in result_balls])
     # z_result.sort()
 
     return x_test, y_test, z_test, x_result, y_result, z_result

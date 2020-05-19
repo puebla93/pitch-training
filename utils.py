@@ -77,7 +77,7 @@ class Reader():
 
     def setUp(self, nparams):
         self.params.setattr(nparams)
-        if nparams.has_key("read_from") and nparams["read_from"] == "camera" and self.capture is None:
+        if nparams.get("read_from") == "camera" and self.capture is None:
             self.capture = cv2.VideoCapture(self.params.camera_index)
 
     def __setDefaults__(self):
@@ -115,7 +115,7 @@ class HomePlate():
         elif indexes[0] + indexes[1] == 3:
             return np.array(pts[4:] + pts[:4])
         else:
-            roll = (indexes[0] + indexes[1])/2
+            roll = (indexes[0] + indexes[1])//2
             rolled_pts = np.array(pts[roll:] + pts[:roll])
             return rolled_pts
 
@@ -217,7 +217,7 @@ def angle(v1, v2):
     return np.degrees(math.acos(inner_product/(len1*len2)))
 
 def homeAVG(homes):
-    contours = map(lambda home: home.contour, homes)
+    contours = [home.contour for home in homes]
     contour = np.mean(contours, 0)
     return HomePlate(contour)
 
@@ -291,11 +291,11 @@ def kmeans(frame, K):
     return result_frame
 
 def plot_fit(all_balls, n_balls):
-    points = map(lambda ball: np.array([ball.center[0], ball.center[1], ball.radius]), all_balls)
+    points = [np.array([ball.center[0], ball.center[1], ball.radius]) for ball in all_balls]
     points = np.array(points)
     x, y, z = points[:, 0], points[:, 1], points[:, 2]
 
-    points = map(lambda ball: np.array([ball.center[0], ball.center[1], ball.radius]), n_balls)
+    points = [np.array([ball.center[0], ball.center[1], ball.radius]) for ball in n_balls]
     points = np.array(points)
     n_x, n_y, n_z = points[:, 0], points[:, 1], points[:, 2]
 
