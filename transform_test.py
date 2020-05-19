@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import detect_homes
 from util import transform
-from filtering import filter_img
+from util.filtering import filter_img
 from util.utils import Obj, HomePlate, homeAVG
 from util.cvinput import cvwindows
 from util.parse_args import args
