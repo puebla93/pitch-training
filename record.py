@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 import cv2
 import beep
-from cvinput import cvwindows
+from util.cvinput import cvwindows
 from parse_args import args
 
 def main():

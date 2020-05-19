@@ -4,7 +4,7 @@ import detect_homes
 import transform
 from filtering import filter_img
 from util.utils import Obj, HomePlate, homeAVG
-from cvinput import cvwindows
+from util.cvinput import cvwindows
 from parse_args import args
 import beep
 
