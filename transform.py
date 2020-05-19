@@ -45,7 +45,7 @@ def homePlate_transform(frame, home):
         cv2.waitKey(0)
         cv2.destroyWindow('Warped')
         cv2.destroyWindow('Square')
-        print "TRANSFORMING FRAME DONE!!!\n"
+        print("TRANSFORMING FRAME DONE!!!\n")
     
 	# return the perspective transform matrix
     return PTM, homePlate_cnt

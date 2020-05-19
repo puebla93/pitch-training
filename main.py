@@ -103,8 +103,8 @@ def calibrateHome(reader):
         cv2.waitKey(1)
 
         if len(homes) > 2:
-            print "len = ", len(homes)
-            print reader.get_frameName()
+            print("len = ", len(homes))
+            print(reader.get_frameName())
             cv2.waitKey(0)
 
     cv2.destroyWindow('Homes')

@@ -35,7 +35,7 @@ def get_balls(frame, frame_number):
             cv2.destroyWindow('Kmeans')
         else:
             cv2.destroyWindow('Background Subtractor')
-        print "\nGETTING BALLS DONE!!!\n"        
+        print("\nGETTING BALLS DONE!!!\n")
         draw_balls(balls, frame, 'balls')
         cv2.waitKey(0)
         cv2.destroyWindow('balls')
@@ -85,14 +85,14 @@ def filter_by_radius(frame, contours, frame_number):
 
         if radiusPercent > params.max_radiusPercent or radiusPercent < params.min_radiusPercent:
             if params.debugging:
-                print "discarded by radius ", radiusPercent
+                print("discarded by radius ", radiusPercent)
         elif center[0] > params.home_begin:
             if params.debugging:
-                print "discarded by the ball is in the end of the image"
+                print("discarded by the ball is in the end of the image")
         else:
             balls.append(ball)
             if params.debugging:
-                print "carded by radius"
+                print("carded by radius")
 
         if params.debugging:
             if params.aproxContour == 0:

@@ -79,7 +79,7 @@ def move_rectangle(k):
         showed_frame = frame.copy()
         cv2.rectangle(showed_frame, (fx, fy), (sx, sy), (0,255,0), 1)
     elif k != 255:
-        print k
+        print(k)
 
 def saveBallPosition(_frame, frameName):
     global frame, showed_frame, strike
@@ -107,7 +107,7 @@ def saveBallPosition(_frame, frameName):
             data[frameName] = [center, radius]
             data["strike"] = strike
             save(data, file_path)
-            print "frame " + str(frameName) + " saved"
+            print("frame " + str(frameName) + " saved")
         elif k == ord('q'):
             break
         else:

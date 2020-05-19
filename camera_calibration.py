@@ -42,7 +42,7 @@ def calibrate():
             cv2.imwrite('chessboard_images/'+str(found)+'.png', img)
         else:
             to_print = fname[-5:] if fname[-6] == '/' else fname[-6:]
-            print to_print
+            print(to_print)
 
         found += 1
         cv2.imshow('img', img)
@@ -54,7 +54,7 @@ def calibrate():
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
     mean_error = 0
-    for i in xrange(len(objpoints)):
+    for i in range(len(objpoints)):
         imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
         error = cv2.norm(imgpoints[i], imgpoints2, cv2.NORM_L2)/len(imgpoints2)
         mean_error += error

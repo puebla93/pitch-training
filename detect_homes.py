@@ -34,7 +34,7 @@ def get_homes(frame):
     if params.debugging:
         cv2.destroyWindow('Thresh')
         cv2.destroyWindow('filters contours by angles')
-        print "DETECTING HOMES DONE!!!\n"
+        print("DETECTING HOMES DONE!!!\n")
         show_contours(homes.astype('int32'), frame, 'homes')
         cv2.waitKey(0)
         cv2.destroyWindow('homes')
@@ -57,18 +57,18 @@ def filter_by_area(frame, contours):
         
         if percent_area > params.max_percentArea or percent_area < params.min_percentArea:
             if params.debugging:
-                print "discarded by area"
+                print("discarded by area")
         else:
             filter_contours.append(cnt)
             if params.debugging:
-                print "carded by area"
+                print("carded by area")
         
         if params.debugging:
             show_contours([cnt], frame, 'working cnt in filter by area')
             cv2.waitKey(0)
 
     if params.debugging:
-        print '\nFilter By Area. DONE!!!\n'
+        print('\nFilter By Area. DONE!!!\n')
         cv2.destroyWindow('working cnt in filter by area')
         cv2.destroyWindow('all contours')
         show_contours(filter_contours, frame, 'filters contours by area')
@@ -91,9 +91,9 @@ def filter_by_sidesNumber(frame, contours):
         if len(cnt_approx) == params.numberOfSizes:
             filter_contours.append(cnt_approx)
             if params.debugging:
-                print "carded by sides number"
+                print("carded by sides number")
         elif params.debugging:
-            print "discarded by sides number: ", len(cnt_approx), " sides"
+            print("discarded by sides number: ", len(cnt_approx), " sides")
 
         if params.debugging:
             show_contours([cnt], frame, 'working cnt in filter by sides')
@@ -102,7 +102,7 @@ def filter_by_sidesNumber(frame, contours):
             cv2.waitKey(0)
 
     if params.debugging:
-        print '\nFilter By Sides Number. DONE!!!\n'
+        print('\nFilter By Sides Number. DONE!!!\n')
         cv2.destroyWindow('working cnt in filter by sides')
         cv2.destroyWindow('Hull')
         cv2.destroyWindow('approx of working cnt in filter by sides')
@@ -134,13 +134,13 @@ def filter_by_sidesRatio(frame, contours):
         if percent_min_sides <= params.percentSideRatio and percent_middel_sides <= params.percentSideRatio: # filter by percent between distances
             filter_contours.append(refined_corners)
             if params.debugging:
-                print 'carded by sides ratio'
+                print('carded by sides ratio')
         elif params.debugging:
-            print "discarded by sides ratio"
-            print "SORTED DISTANCES"
-            print dist
-            print "MIN_SIDES PERCENT: ", percent_min_sides
-            print "MIDDEL_SIDES PERCENT: ", percent_middel_sides
+            print("discarded by sides ratio")
+            print("SORTED DISTANCES")
+            print(dist)
+            print("MIN_SIDES PERCENT: ", percent_min_sides)
+            print("MIDDEL_SIDES PERCENT: ", percent_middel_sides)
 
         if params.debugging:
             show_contours([cnt], frame, 'working cnt in filter by sides ratio')
@@ -150,7 +150,7 @@ def filter_by_sidesRatio(frame, contours):
 
     filter_contours = np.array(filter_contours)
     if params.debugging:
-        print '\nFilter By Sides Ratio. DONE!!!\n'        
+        print('\nFilter By Sides Ratio. DONE!!!\n'        )
         cv2.destroyWindow('working cnt in filter by sides ratio')
         cv2.destroyWindow('lines')
         cv2.destroyWindow('refined_corners')
@@ -168,18 +168,18 @@ def filter_by_angles(frame, contours):
         if np.allclose(angles[:3], [90]*3, 0, params.diff_rectAngles) and np.allclose(angles[3:], [135]*2, 0, params.diff_maxAngles):
             filter_contours.append(cnt)
             if params.debugging:
-                print "carded by angles"
+                print("carded by angles")
         elif params.debugging:
-            print "discarded by angles"
-            print "SORTED ANGLES"
-            print angles
+            print("discarded by angles")
+            print("SORTED ANGLES")
+            print(angles)
 
         if params.debugging:
             show_contours([cnt.astype('int32')], frame, 'working cnt in filter by angles')
 
     filter_contours = np.array(filter_contours)
     if params.debugging:
-        print '\nFilter By Angles. DONE!!!\n'        
+        print('\nFilter By Angles. DONE!!!\n'        )
         cv2.destroyWindow('working cnt in filter by angles')
         cv2.destroyWindow('filters contours by sides ratio')
         show_contours(filter_contours.astype('int32'), frame, 'filters contours by angles')

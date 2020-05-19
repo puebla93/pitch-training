@@ -55,7 +55,7 @@ class PitchTrainig():
             # finding a list of homes
             contours = detect_homes.get_homes(gray)
             if contours is None or len(contours) == 0:
-                print self.reader.get_frameNumber()
+                print(self.reader.get_frameNumber())
                 continue
 
             # keeping the best home
@@ -65,8 +65,8 @@ class PitchTrainig():
             self.__drawHomes__(frame, contours)
 
             if len(contours) > 1:
-                print "len = ", len(contours)
-                print self.reader.get_frameNumber()
+                print("len = ", len(contours))
+                print(self.reader.get_frameNumber())
 
         return HomePlate(self.__homeAVG__(home_tracking))
 

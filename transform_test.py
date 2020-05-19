@@ -100,11 +100,11 @@ def main():
             file_name = 'presentation/' + str(i) + ".jpg"
             cv2.imwrite(file_name, dual_frame)
             i += 1
-        print "done"
+        print("done")
 
 def write_frames(frames):
     import os
-    print "writing to disk..."
+    print("writing to disk...")
     imgs_name = os.listdir("./videos/transform_test/")
     imgs_name.sort()
     i = len(imgs_name)
@@ -112,7 +112,7 @@ def write_frames(frames):
         file_name = "./videos/transform_test/" + str(i) + ".png"
         cv2.imwrite(file_name, frame)
         i += 1
-    print "done"
+    print("done")
 
 def set_props(capture, props, values):
     min_len = min(len(props), len(values))

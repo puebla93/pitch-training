@@ -81,11 +81,11 @@ def fit_points(points, fit):
     return np.array(new_points)
 
 def plot_debug(data, maybe_idxs, also_idxs, maybemodel):
-    # print 'test_err.min()', test_err.min()
-    # print 'test_err.max()', test_err.max()
-    # print 'np.mean(test_err)', np.mean(test_err)
-    # print 'iteration %d : len(alsoinliers) = %d'%(iterations, len(alsoinliers))
-    # print
+    # print('test_err.min()', test_err.min())
+    # print('test_err.max()', test_err.max())
+    # print('np.mean(test_err)', np.mean(test_err))
+    # print('iteration %d : len(alsoinliers) = %d'%(iterations, len(alsoinliers)))
+    # print()
 
     x, y, z = data[:, 0], data[:, 1], data[:, 2]
     maybeYmodel, maybeZmodel = maybemodel

@@ -28,37 +28,37 @@ def main():
             adjust_image = True
             gain = capture.get(cv2.cv.CV_CAP_PROP_GAIN)
             capture.set(cv2.cv.CV_CAP_PROP_GAIN, 0.0)
-            # print capture.get(cv2.cv.CV_CAP_PROP_GAIN)
-            # print
+            # print(capture.get(cv2.cv.CV_CAP_PROP_GAIN))
+            # print()
             # set_props(capture, ["GAIN"], [gain])
             # capture.set(18, capture.get(18))
 
         if show_fps and (datetime.now() - t).seconds >= 1:
-            print frames_count
+            print(frames_count)
             frames_count = 0
             t = datetime.now()
         frames_count += 1
 
         if (not adjust_image) and cvwindows.last_key == ' ':
-            print "wait for adjust image"
+            print("wait for adjust image")
         elif cvwindows.last_key == ' ':
             beep.beep()
             save = not save
             if not save:
-                print "done"
+                print("done")
                 write_frames(frames)
                 beep.beep()
                 frames = []
             else:
-                print "recording frames..."
+                print("recording frames...")
         if save:
             frames.append(img)
-        # print capture.get(cv2.cv.CV_CAP_PROP_GAIN)
+        # print(capture.get(cv2.cv.CV_CAP_PROP_GAIN))
         # if (datetime.now() - start_time).seconds >= 6:
         #     break
 
 def write_frames(frames):
-    print "writing to disk..."
+    print("writing to disk...")
     folder_name = time.asctime()
     os.mkdir(folder_name)
     i = 0
@@ -66,7 +66,7 @@ def write_frames(frames):
         file_name = folder_name + "/" + str(i) + ".png"
         cv2.imwrite(file_name, frame)
         i += 1
-    print "done"
+    print("done")
 
 def set_props(capture, props, values):
     min_len = min(len(props), len(values))
