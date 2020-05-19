@@ -1,6 +1,6 @@
 import numpy as np
 import scipy
-from utils import Obj, QuadraticLeastSquaresModel, Ball
+from util.utils import Obj, QuadraticLeastSquaresModel, Ball
 import matplotlib.pyplot as plt
 
 params = Obj(

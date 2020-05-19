@@ -6,7 +6,7 @@ import transform
 import capture_balls
 from cvinput import cvwindows
 from parse_args import args
-from utils import Reader, Obj, show_contours, HomePlate, kmeans
+from util.utils import Reader, Obj, show_contours, HomePlate, kmeans
 from filtering import filter_img
 
 class PitchTrainig():

@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
-from utils import Obj, HomePlate
-from utils import show_contours
+from util.utils import Obj, HomePlate
+from util.utils import show_contours
 
 params = Obj(
     debugging=False,

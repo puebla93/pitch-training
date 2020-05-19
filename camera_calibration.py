@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import json
 import glob
-from utils import Obj
+from util.utils import Obj
 
 params = Obj(
     chessboard_size=(9,6),

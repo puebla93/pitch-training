@@ -1,5 +1,5 @@
 import cv2
-from utils import Obj
+from util.utils import Obj
 
 params = Obj(
     blur_algorithm=cv2.medianBlur,
