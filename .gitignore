@@ -1,9 +1,4 @@
 *.png
 *.jpg
 *.pyc
-*.txt
-*/
-*.rar
-*.zip
 *.json
-*.sh
